@@ -1,6 +1,8 @@
 from django.core.validators import RegexValidator
 from django.db import models
 
+from tenant.models import Tenant
+
 
 class User(models.Model):
     name = models.CharField(max_length=250)
@@ -8,7 +10,7 @@ class User(models.Model):
     phone_number = models.BigIntegerField(validators=[
         RegexValidator(
             regex='^[6789]\d{9}$',
-            message='Phone number must be 10 digits and starts with wither(6,7,8,9)',
+            message='Phone number must be 10 digits and starts with either(6,7,8,9)',
             code='invalid_number'
         ),
     ])
@@ -17,3 +19,4 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, )
     updated_at = models.DateTimeField(auto_now=True, )
     is_active = models.BooleanField(default=True)
+    tenant_id = models.ForeignKey(Tenant, on_delete=models.CASCADE)

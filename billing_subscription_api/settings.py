@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'user',
     'subscription',
-    'tenant'
+    'tenant',
+    'plan',
+    'service'
 ]
 
 MIDDLEWARE = [

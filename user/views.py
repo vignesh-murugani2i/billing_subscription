@@ -38,6 +38,8 @@ def get_user_by_id(request, user_id):
         if user_details.is_active:
             user_details = UserSerializer(user_details)
             return Response(user_details.data)
+        else:
+            raise ObjectDoesNotExist
     except ObjectDoesNotExist:
         return Response({'message': 'No such user'})
 

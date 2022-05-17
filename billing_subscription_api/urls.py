@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('subscription.urls')),
     path('', include('user.urls')),
     path('', include('tenant.urls')),
     path('service/', include('service.urls')),

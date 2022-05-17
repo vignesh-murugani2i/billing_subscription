@@ -23,7 +23,7 @@ def get_all_user(request):
     """Returns a list of all users."""
 
     users = User.objects.all().filter(is_active=True)
-    if users is not None:
+    if users.exists():
         user_list = UserSerializer(instance=users, many=True)
         return Response(user_list.data)
     else:

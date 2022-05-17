@@ -39,7 +39,7 @@ def get_all_tenant(request):
     """Gets all tenant"""
 
     tenants = Tenant.objects.filter(is_active=True)
-    if tenants is not None:
+    if tenants.exists():
         tenant_list = TenantSerializer(instance=tenants, many=True)
         return Response(tenant_list.data)
     else:

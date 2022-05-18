@@ -17,3 +17,5 @@ class Subscription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, )
     updated_at = models.DateTimeField(auto_now=True, )
     is_active = models.BooleanField(default=True)
+    next_subscription_date = models.DateField(null=True)
+    subscription_end_date = models.DateField(null=True)

@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'subscription',
     'tenant',
     'plan',
-    'service'
+    'service',
+    'card'
 ]
 
 MIDDLEWARE = [

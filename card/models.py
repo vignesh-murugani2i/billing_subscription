@@ -9,7 +9,8 @@ class Card(models.Model):
         ("rupay", "rupay"),
         ("master card", "master card")
     )
-    card_type = models.Choices(choices=CARD_CHOICE, max_length=1)
+    card_type = models.CharField(choices=CARD_CHOICE, max_length=15)
     card_number = models.BigIntegerField()
-    expires_date = models.DateField(input_formats=['%m/%Y'])
-    user = models.ForeignKey(User, on_delete=models.CASCADE(), related_name='cards')
+    cvv_number = models.IntegerField()
+    expires_date = models.DateField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cards')

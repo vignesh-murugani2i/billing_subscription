@@ -41,6 +41,7 @@ def get_subscription_by_id(request, subscription_id):
     try:
         subscription_details = Subscription.objects.get(pk=subscription_id)
         if subscription_details.is_active:
+            subscription_details = SubscriptionSerializer(subscription_details)
             return Response(subscription_details.data)
         else:
             raise ObjectDoesNotExist

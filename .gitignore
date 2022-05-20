@@ -1,5 +1,2 @@
 *.pyc
-__pycache__/
-*.py[cod]
-*$py.class
-user/__pycache__/*
+user/__pycache__

@@ -5,7 +5,7 @@ from plan.serializer import PlanSerializer
 
 
 class PlanViewSet(viewsets.ModelViewSet):
-    """This class provides all the CRUD functionalities for Plan"""
+    """This class provides all the CRUD functionalities for Plan Model"""
 
     serializer_class = PlanSerializer
     queryset = Plan.objects.all()

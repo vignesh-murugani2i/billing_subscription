@@ -8,7 +8,12 @@ from tenant.serializer import TenantSerializer
 
 @api_view(['POST'])
 def create_tenant(request):
-    """Creates new tenant"""
+    """
+    Creates a new tenant with given details in database.
+
+    :param request: it holds new tenant details
+    :return: It returns newly created tenant details with tenant id
+    """
 
     try:
         new_tenant = TenantSerializer(data=request.data)
@@ -21,7 +26,13 @@ def create_tenant(request):
 
 @api_view(['GET'])
 def get_tenant_by_id(request, tenant_id):
-    """Gets tenant by id"""
+    """
+    Gets a particular details tenant by tenant id.
+
+    :param request: for get particular tenant.
+    :param tenant_id: it holds tenant id.
+    :return: It returns particular tenant details.
+    """
 
     try:
         tenant_details = Tenant.objects.get(pk=tenant_id)
@@ -31,25 +42,35 @@ def get_tenant_by_id(request, tenant_id):
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:
-        return Response("no user found")
+        return Response("no tenant found")
 
 
 @api_view(['GET'])
 def get_all_tenant(request):
-    """Gets all tenant"""
+    """
+    Gets List of all tenant from database.
+
+    :param request: for get all tenant details.
+    :return: It returns List of all tenant.
+    """
 
     tenants = Tenant.objects.filter(is_active=True)
     if tenants.exists():
         tenant_list = TenantSerializer(instance=tenants, many=True)
         return Response(tenant_list.data)
     else:
-        print("no tenants")
         return Response("No tenants")
 
 
 @api_view(['PUT'])
 def update_tenant_by_id(request, tenant_id):
-    """Updates tenant details by id"""
+    """
+    Updates a particular tenant details by tenant id.
+
+    :param request: for update particular tenant
+    :param tenant_id: it holds tenant id
+    :return: returns updated tenant details.
+    """
 
     try:
         existing_tenant_data = Tenant.objects.get(pk=tenant_id)
@@ -64,7 +85,13 @@ def update_tenant_by_id(request, tenant_id):
 
 @api_view(['DELETE'])
 def delete_tenant_by_id(request, tenant_id):
-    """Deletes tenant by id"""
+    """
+    Changes a particular tenant's active status as False in database by tenant id.
+
+    :param request: for Delete particular tenant
+    :param tenant_id: it holds tenant id
+    :return: It returns particular tenant deleted or not
+    """
 
     try:
         tenant_details = Tenant.objects.get(pk=tenant_id)
@@ -75,4 +102,4 @@ def delete_tenant_by_id(request, tenant_id):
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:
-        return Response("no user found")
+        return Response("no tenant found")

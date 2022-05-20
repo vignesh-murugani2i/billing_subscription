@@ -1,3 +1,4 @@
+import smtplib
 from datetime import datetime, timedelta, date
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -9,25 +10,26 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from plan.models import Plan
+from service.models import Service
 from subscription.models import Subscription
 from subscription.serializer import SubscriptionSerializer
+from user.models import User
 
 
 @api_view(['POST'])
 def create_subscription(request):
     """Creates new subscription"""
-    # next_subscription_date = None
     try:
         plan_details = Plan.objects.get(id=request.data['plan'])
         plan_type = int(plan_details.plan_type)
         start_date_string = request.data['start_subscription_date']
         start_date = datetime.strptime(start_date_string, "%Y-%m-%d")
-        # next_subscription_date = calculate_next_subscription_date(plan_type, start_date)
         next_subscription_date = start_date
-        subscription_end_date = calculate_subscription_end_date(plan_type,
-                                                                int(request.data['cycle_count']), start_date)
+        subscription_end_date = calculate_subscription_end_date(
+            plan_type, int(request.data['cycle_count']), start_date)
         request.data['next_subscription_date'] = next_subscription_date.strftime('%Y-%m-%d')
         request.data['subscription_end_date'] = subscription_end_date.strftime('%Y-%m-%d')
+        request.data['remind_date'] = calculate_remind_date(next_subscription_date)
         new_subscription = SubscriptionSerializer(data=request.data)
         new_subscription.is_valid(raise_exception=True)
         new_subscription.save()
@@ -69,7 +71,7 @@ def update_subscription_by_id(request, subscription_id):
         plan_type = int(plan_details.plan_type)
         start_date_string = request.data['start_subscription_date']
         start_date = datetime.strptime(start_date_string, "%Y-%m-%d")
-        # next_subscription_date = calculate_next_subscription_date(plan_type, start_date)
+        #  next_subscription_date = calculate_next_subscription_date(plan_type, start_date)
         next_subscription_date = start_date
         subscription_end_date = calculate_subscription_end_date(plan_type,
                                                                 int(request.data['cycle_count']),
@@ -122,3 +124,51 @@ def calculate_subscription_end_date(plan_type, cycle_count, start_date):
     elif plan_type == 3:
         subscription_end_date = start_date + timedelta(days=cycle_count * 365)
     return subscription_end_date
+
+
+def calculate_remind_date(next_subscription_date):
+    # next_subscription_date = subscription_details['next_subscription_date']
+    if next_subscription_date.date() > date.today() + timedelta(days=2):
+        reminder_list = Subscription.objects.filter(remind_date='2022-05-23').values('user_id', 'plan_id')
+        print(reminder_list)
+        for i in reminder_list:
+            print(i)
+        remind_date = next_subscription_date - timedelta(days=2)
+    else:
+        remind_date = next_subscription_date
+    print(remind_date.strftime('%Y-%m-%d'))
+    return remind_date.strftime('%Y-%m-%d')
+
+
+@api_view(['GET'])
+def remind_all_subscriptions(request):
+    today_date = date.today()
+
+    reminder_list = Subscription.objects.filter(
+        remind_date="2022-05-23").values('user_id', 'plan_id', 'service_id', 'next_subscription_date')
+    print(reminder_list)
+    if reminder_list:
+        for subscription_detail in reminder_list:
+            plan_details = Plan.objects.get(id=subscription_detail['plan_id'])
+            service_details = Service.objects.get(id=subscription_detail['service_id'])
+            user_details = User.objects.get(id=subscription_detail['user_id'])
+            message = f"your {service_details.name} subscription for plan {plan_details.amount} " \
+                      f"will be subscribed on {subscription_detail['next_subscription_date']}"
+            subscriber_mail = user_details.email
+            send_mail_to_subscriber(message, subscriber_mail)
+
+        return Response("mail sent successfully")
+    else:
+        return Response("no reminders today")
+
+
+def send_mail_to_subscriber(message, subscriber_mail):
+    mail_server = smtplib.SMTP('smtp.gmail.com', 587)
+    mail_server.starttls()
+    # Authentication
+    mail_server.login("subscriptionforyou45@gmail.com", "just$for$demo")
+    # message to be sent
+    mail_server.sendmail("subscriptionforyou45@gmail.com", subscriber_mail, message)
+    print("mail sent")
+    # terminating the session
+    mail_server.quit()

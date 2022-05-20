@@ -11,4 +11,4 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = ("id", "tenant", "user", "service", "plan", "card", "remind_days", "account_mail",
                   "start_subscription_date", "cycle_count", "created_at",
-                  "updated_at", "is_active", "next_subscription_date", "subscription_end_date")
+                  "updated_at", "is_active", "next_subscription_date", "subscription_end_date","remind_date")

@@ -9,6 +9,13 @@ from user.serializer import UserSerializer
 
 @api_view(['POST'])
 def create_user(request):
+    """
+    Creates a new user with user given details in database.
+
+    :param request: it holds new user details
+    :return: It returns newly created user details with user id
+    """
+
     try:
         new_user = UserSerializer(data=request.data)
         new_user.is_valid(raise_exception=True)
@@ -20,19 +27,31 @@ def create_user(request):
 
 @api_view(['GET'])
 def get_all_user(request):
-    """Returns a list of all users."""
+    """
+    Gets List of all user from database.
+
+    :param request: for get all user details.
+    :return: It returns List of all user.
+    """
 
     users = User.objects.all().filter(is_active=True)
     if users.exists():
         user_list = UserSerializer(instance=users, many=True)
         return Response(user_list.data)
     else:
-        print("no users")
         return Response("No users")
 
 
 @api_view(['GET'])
 def get_user_by_id(request, user_id):
+    """
+    Gets a particular user by user id.
+
+    :param request: for get particular user.
+    :param user_id: it holds user id.
+    :return: It returns particular user details.
+    """
+
     try:
         user_details = User.objects.get(pk=user_id)
         if user_details.is_active:
@@ -46,6 +65,14 @@ def get_user_by_id(request, user_id):
 
 @api_view(['PUT'])
 def update_user_by_id(request, user_id):
+    """
+    Updates a particular user details by user id.
+
+    :param request: for update particular user
+    :param user_id: it holds user id
+    :return: returns updated user details.
+    """
+
     try:
         existing_user_data = User.objects.get(pk=user_id)
         updated_user_data = UserSerializer(existing_user_data,
@@ -59,7 +86,14 @@ def update_user_by_id(request, user_id):
 
 @api_view(['DELETE'])
 def delete_user_by_id(request, user_id):
-    """Deletes particular user by id"""
+    """
+    Changes a particular user's active status as False in database by user id.
+
+    :param request: for Delete particular user
+    :param user_id: it holds user id
+    :return: It returns particular user deleted or not
+    """
+
     try:
         user_details = User.objects.get(pk=user_id)
         if user_details.is_active:

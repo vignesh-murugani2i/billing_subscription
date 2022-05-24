@@ -8,4 +8,5 @@ billing_subscription_api/plan/__pycache__/
 billing_subscription_api/card/__pycache__/
 billing_subscription_api/payment/__pycache__/
 migrations
+user/__pycache__/
 *.log

@@ -22,23 +22,29 @@ def create_subscription(request):
     try:
         plan_details = Plan.objects.get(id=request.data['plan'])
         plan_type = int(plan_details.plan_type)
-        start_date_string = request.data['start_subscription_date']
-        start_date = datetime.strptime(start_date_string, "%Y-%m-%d")
-        next_subscription_date = start_date
+        if request.data.get('start_subscription_date'):
+            start_date_string = request.data['start_subscription_date']
+            start_date = datetime.strptime(start_date_string, "%Y-%m-%d")
+            next_subscription_date = start_date
+        else:
+            next_subscription_date = datetime.now()
+
         subscription_end_date = calculate_subscription_end_date(
-            plan_type, int(request.data['cycle_count']), start_date)
-        request.data['next_subscription_date'] = next_subscription_date.strftime('%Y-%m-%d')
-        request.data['subscription_end_date'] = subscription_end_date.strftime('%Y-%m-%d')
+            plan_type, int(request.data['cycle_count']), next_subscription_date)
+        request.data['next_subscription_date'] = next_subscription_date
+        request.data['subscription_end_date'] = subscription_end_date
         request.data['remind_date'] = calculate_remind_date(next_subscription_date)
-        new_subscription = SubscriptionSerializer(data=request.data)
-        new_subscription.is_valid(raise_exception=True)
-        # print(request.data["user"])
-        # print(new_subscription.data)
-       # is_duplicate_subscription(new_subscription.data)
-        new_subscription.save()
-        return Response(new_subscription.data)
+        if is_duplicate_subscription(request.data):
+            response = Response("subscription already exist on this service")
+        else:
+            new_subscription = SubscriptionSerializer(data=request.data)
+            new_subscription.is_valid(raise_exception=True)
+            new_subscription.save()
+            response = Response(new_subscription.data)
     except ValidationError as error:
-        return Response({'message': error.message}, status=400)
+        response = Response({'message': error.message}, status=400)
+
+    return response
 
 
 @api_view(['GET'])
@@ -56,6 +62,10 @@ def get_subscription_by_id(request, subscription_id):
 
 @api_view(['GET'])
 def get_all_subscription(request):
+    a = Subscription.objects.filter(is_active=True,
+                                    next_subscription_date__date=date.today()
+                                    ).order_by('next_subscription_date')
+    print(a)
     subscriptions = Subscription.objects.filter(is_active=True)
     if subscriptions.exists():
         subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
@@ -147,7 +157,7 @@ def remind_all_subscriptions(request):
         for subscription_detail in reminder_list.data:
             plan_amount = subscription_detail["plan"]['amount']
             service_name = subscription_detail["service"]['name']
-            subscriber_mail = subscription_detail['user']["email"]
+            subscriber_mail = User.objects.get(pk=subscription_detail['user']).email
             message = f"your {service_name} subscription for plan {plan_amount} " \
                       f"will be subscribed on {subscription_detail['next_subscription_date']}"
             mail_server.sendmail("subscriptionforyou45@gmail.com", subscriber_mail, message)
@@ -160,11 +170,14 @@ def remind_all_subscriptions(request):
 
 def is_duplicate_subscription(new_subscription_details):
     print(new_subscription_details)
+    is_subscription_exist = True
     existing_subscription = Subscription.objects.filter(
         user_id=new_subscription_details["user"],
         service_id=new_subscription_details["service"],
         plan_id=new_subscription_details["plan"])
     if len(existing_subscription) > 0:
-        print("it is exist")
+        is_subscription_exist = True
     else:
-        print("it does not exist")
+        is_subscription_exist = False
+
+    return is_subscription_exist

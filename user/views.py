@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from user.models import User
-from user.serializer import UserSerializer
+from user.serializer import UserSerializer, UserInfoSerializer
 
 
 @api_view(['POST'])
@@ -104,3 +104,16 @@ def delete_user_by_id(request, user_id):
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
         return Response(f"No user found for this id")
+
+
+@api_view(['GET'])
+def get_all_subscription_by_user_id(request, user_id):
+    try:
+        user_details = User.objects.get(pk=user_id)
+        if user_details.is_active:
+            user_details = UserInfoSerializer(user_details)
+            return Response(user_details.data)
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist as error:
+        return Response("no user found")

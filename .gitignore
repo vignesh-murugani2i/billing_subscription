@@ -1,2 +1,11 @@
-*.pyc
-user/__pycache__
+.idea
+billing_subscription_api/__pycache__/
+billing_subscription_api/tenant/__pycache__/
+billing_subscription_api/user/__pycache__/
+billing_subscription_api/subscription/__pycache__/
+billing_subscription_api/service/__pycache__/
+billing_subscription_api/plan/__pycache__/
+billing_subscription_api/card/__pycache__/
+billing_subscription_api/payment/__pycache__/
+migrations
+*.log

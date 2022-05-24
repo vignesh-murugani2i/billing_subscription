@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from tenant.models import Tenant
-from tenant.serializer import TenantSerializer
+from tenant.serializer import TenantSerializer, TenantInfoSerializer
 
 
 @api_view(['POST'])
@@ -99,6 +99,19 @@ def delete_tenant_by_id(request, tenant_id):
             tenant_details.is_active = False
             tenant_details.save()
             return Response("tenant deleted successfully")
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist as error:
+        return Response("no tenant found")
+
+
+@api_view(['GET'])
+def get_all_user_by_tenant_id(request,tenant_id):
+    try:
+        tenant_details = Tenant.objects.get(pk=tenant_id)
+        if tenant_details.is_active:
+            tenant_details = TenantInfoSerializer(tenant_details)
+            return Response(tenant_details.data)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:

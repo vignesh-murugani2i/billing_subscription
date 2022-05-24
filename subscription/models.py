@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from django.db import models
+from django.utils import timezone
 
 from card.models import Card
 from plan.models import Plan
@@ -15,11 +18,11 @@ class Subscription(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name="subscriptions")
     remind_days = models.IntegerField(default=2)
     account_mail = models.EmailField()
-    start_subscription_date = models.DateField()
+    start_subscription_date = models.DateTimeField(default=datetime.now)
     cycle_count = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True, )
     updated_at = models.DateTimeField(auto_now=True, )
     is_active = models.BooleanField(default=True)
-    next_subscription_date = models.DateField(null=True)
-    subscription_end_date = models.DateField(null=True)
-    remind_date = models.DateField(null=True)
+    next_subscription_date = models.DateTimeField(null=True)
+    subscription_end_date = models.DateTimeField(null=True)
+    remind_date = models.DateTimeField(null=True)

@@ -10,3 +10,6 @@ billing_subscription_api/payment/__pycache__/
 migrations
 user/__pycache__/
 *.log
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir

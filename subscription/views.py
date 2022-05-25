@@ -1,5 +1,6 @@
 import smtplib
 from datetime import datetime, timedelta, date
+from subscription.tasks import test_func
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.shortcuts import render
@@ -181,3 +182,8 @@ def is_duplicate_subscription(new_subscription_details):
         is_subscription_exist = False
 
     return is_subscription_exist
+
+@api_view(['GET'])
+def test(request):
+    test_func.delay()
+    return Response("done")

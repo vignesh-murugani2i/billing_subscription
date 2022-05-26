@@ -1,6 +1,5 @@
 import smtplib
 from datetime import datetime, timedelta, date
-from subscription.tasks import test_func
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.shortcuts import render
@@ -63,10 +62,6 @@ def get_subscription_by_id(request, subscription_id):
 
 @api_view(['GET'])
 def get_all_subscription(request):
-    a = Subscription.objects.filter(is_active=True,
-                                    next_subscription_date__date=date.today()
-                                    ).order_by('next_subscription_date')
-    print(a)
     subscriptions = Subscription.objects.filter(is_active=True)
     if subscriptions.exists():
         subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
@@ -183,7 +178,7 @@ def is_duplicate_subscription(new_subscription_details):
 
     return is_subscription_exist
 
-@api_view(['GET'])
-def test(request):
-    test_func.delay()
-    return Response("done")
+# @api_view(['GET'])
+# def test(request):
+#     test_func.delay()
+#     return Response("done")

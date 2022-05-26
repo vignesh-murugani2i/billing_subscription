@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'service',
     'card',
     'django_celery_results',
-    'django_celery_beat'
+    'django_celery_beat',
+    'payment'
 ]
 
 MIDDLEWARE = [
@@ -138,3 +139,12 @@ CELERY_TIMEZONE = 'Asia/Kolkata'
 
 CELERY_RESULT_BACKEND = 'db+mysql://root:qwertY_12345@localhost:3306/billing_subscription'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# SMTP email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'subscriptionforyou45@gmail.com'
+EMAIL_HOST_PASSWORD = 'just$for$demo'
+DEFAULT_FROM_EMAIL = 'Celery<subscriptionforyou45@gmail.com>'

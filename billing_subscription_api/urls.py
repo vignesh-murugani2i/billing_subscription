@@ -18,6 +18,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('', include('subscription.urls')),
+    path('', include('payment.urls')),
     path('', include('card.urls')),
     path('', include('user.urls')),
     path('', include('tenant.urls')),

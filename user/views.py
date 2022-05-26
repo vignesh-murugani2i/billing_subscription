@@ -3,7 +3,6 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from subscription.tasks import test_func
 from user.models import User
 from user.serializer import UserSerializer, UserInfoSerializer
 

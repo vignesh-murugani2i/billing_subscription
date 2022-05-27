@@ -5,6 +5,7 @@ from django.utils.datetime_safe import date, datetime
 
 from payment.models import Payment
 from subscription.models import Subscription
+from subscription.service import send_mail_to_subscriber, set_next_subscription_date
 
 
 @shared_task(bind=True)
@@ -27,22 +28,3 @@ def make_all_subscriptions_payment(self):
         set_next_subscription_date(subscription)
 
 
-
-def set_next_subscription_date(subscription):
-    end_date = subscription.subscription_end_date
-
-    if date.today() == end_date.date():
-        subscription.is_active = False
-    else:
-        next_subscription_date = subscription.next_subscription_date
-        plan = subscription.plan
-        if int(plan.plan_type) == 1:
-            next_subscription_date = next_subscription_date + timedelta(days=30)
-        elif int(plan.plan_type) == 2:
-            next_subscription_date = next_subscription_date + timedelta(days=120)
-        elif int(plan.plan_type) == 3:
-            next_subscription_date = next_subscription_date + timedelta(days=365)
-        subscription.next_subscription_date = next_subscription_date
-        subscription.remind_date = subscription.next_subscription_date - timedelta(days=2)
-        print(subscription.next_subscription_date)
-        subscription.save()

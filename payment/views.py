@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from payment.models import Payment
 from subscription.models import Subscription
+from subscription.service import set_next_subscription_date
 
 
 @api_view(['POST'])
@@ -32,24 +33,3 @@ def make_all_subscriptions_payment(request):
         return Response("Subscription payment done successfully")
     else:
         return Response("There is no subscription today")
-
-
-def set_next_subscription_date(subscription):
-    end_date = subscription.subscription_end_date
-
-    if date.today() == end_date.date():
-        subscription.is_active = False
-    else:
-        next_subscription_date = subscription.next_subscription_date
-        plan = subscription.plan
-        if plan.plan_type == 1:
-            next_subscription_date = next_subscription_date + timedelta(days=30)
-        elif plan.plan_type == 2:
-            next_subscription_date = next_subscription_date + timedelta(days=120)
-        elif plan.plan_type == 3:
-            next_subscription_date = next_subscription_date + timedelta(days=365)
-        subscription.next_subscription_date = next_subscription_date
-        subscription.remind_date = next_subscription_date - timedelta(days=2)
-        print(subscription.next_subscription_date)
-        subscription.save()
-

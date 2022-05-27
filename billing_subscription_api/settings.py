@@ -148,3 +148,31 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'subscriptionforyou45@gmail.com'
 EMAIL_HOST_PASSWORD = 'just$for$demo'
 DEFAULT_FROM_EMAIL = 'Celery<subscriptionforyou45@gmail.com>'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)s - %(funcName)s() ] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'subscription.log',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'root': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

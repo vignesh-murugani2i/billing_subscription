@@ -9,6 +9,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from payment.service import create_payment
 from plan.models import Plan
 from service.models import Service
 from subscription.models import Subscription
@@ -22,28 +23,30 @@ def create_subscription(request):
     try:
         plan_details = Plan.objects.get(id=request.data['plan'])
         plan_type = int(plan_details.plan_type)
-        if request.data.get('start_subscription_date'):
-            start_date_string = request.data['start_subscription_date']
-            start_date = datetime.strptime(start_date_string, "%Y-%m-%d")
-            next_subscription_date = start_date
-        else:
-            next_subscription_date = datetime.now()
-
-        subscription_end_date = calculate_subscription_end_date(
-            plan_type, int(request.data['cycle_count']), next_subscription_date)
-        request.data['next_subscription_date'] = next_subscription_date
-        request.data['subscription_end_date'] = subscription_end_date
-        request.data['remind_date'] = calculate_remind_date(next_subscription_date)
         if is_duplicate_subscription(request.data):
             response = Response("subscription already exist on this service")
         else:
+            # request.data['start_subscription_date'] = "2022-05-27 00:00:00.000000"
+            # start_date_string = request.data['start_subscription_date']
+            # start_date = datetime.strptime(start_date_string, "%Y-%m-%d")
+            next_subscription_date = datetime.now()
+            subscription_end_date = calculate_subscription_end_date(
+                plan_type, int(request.data['cycle_count']), next_subscription_date)
+            request.data['next_subscription_date'] = next_subscription_date
+            request.data['subscription_end_date'] = subscription_end_date
+            request.data['remind_date'] = calculate_remind_date(next_subscription_date)
             new_subscription = SubscriptionSerializer(data=request.data)
             new_subscription.is_valid(raise_exception=True)
             new_subscription.save()
+            if next_subscription_date.date() == date.today():
+                create_payment(new_subscription.data['id'])
+
             response = Response(new_subscription.data)
+
     except ValidationError as error:
         response = Response({'message': error.message}, status=400)
 
+    print("subscription done")
     return response
 
 
@@ -132,7 +135,9 @@ def calculate_remind_date(next_subscription_date):
     else:
         remind_date = next_subscription_date
 
-    return remind_date.strftime('%Y-%m-%d')
+    # remind_date = datetime.strptime(remind_date, "%Y-%m-%d")
+    print(type(remind_date))
+    return remind_date
 
 
 @api_view(['GET'])

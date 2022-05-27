@@ -1,10 +1,15 @@
+import logging
+
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from payment.service import get_all_payments_by_user_id
 from user.models import User
 from user.serializer import UserSerializer, UserInfoSerializer
+
+logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
@@ -33,7 +38,7 @@ def get_all_user(request):
     :param request: for get all user details.
     :return: It returns List of all user.
     """
-
+    logger.debug("get all user from database")
     users = User.objects.all().filter(is_active=True)
     if users.exists():
         user_list = UserSerializer(instance=users, many=True)
@@ -118,3 +123,21 @@ def get_all_subscription_by_user_id(request, user_id):
     except ObjectDoesNotExist as error:
         return Response("no user found")
 
+
+@api_view(['GET'])
+def get_payments_by_user_id(request, user_id):
+    try:
+        user_details = User.objects.get(pk=user_id)
+        payment_list = get_all_payments_by_user_id(user_id)
+        if user_details.is_active:
+            print(len(payment_list))
+            if payment_list:
+                response = payment_list
+            else:
+                response = "no payment found"
+        else:
+            raise ObjectDoesNotExist()
+    except ObjectDoesNotExist:
+        response = "no user found"
+
+    return Response(response)

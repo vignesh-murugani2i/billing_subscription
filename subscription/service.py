@@ -25,7 +25,7 @@ def send_mail_to_subscriber(mail_subject, mail_message, subscriber_mail):
 def set_next_subscription_date(subscription):
     end_date = subscription.subscription_end_date
 
-    if date.today() == end_date.date():
+    if date.today() == end_date:
         mail_subject = "Reminder for subscription plan ended"
         mail_message = "Your subscription plan has been expired"
         subscriber_mail = subscription.user.email
@@ -43,4 +43,6 @@ def set_next_subscription_date(subscription):
             next_subscription_date = next_subscription_date + timedelta(days=365)
         subscription.next_subscription_date = next_subscription_date
         subscription.remind_date = subscription.next_subscription_date - timedelta(days=2)
+        print(subscription.next_subscription_date)
         subscription.save()
+        return subscription

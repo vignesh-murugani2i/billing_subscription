@@ -25,8 +25,10 @@ def create_user(request):
         new_user = UserSerializer(data=request.data)
         new_user.is_valid(raise_exception=True)
         new_user.save()
+        logger.debug('New User created with Id: {}'.format(new_user.data['id']))
         return Response(new_user.data)
     except ValidationError as error:
+        logger.debug(f'Validation error:{error.message}')
         return Response({'message': error.message}, status=400)
 
 
@@ -38,12 +40,14 @@ def get_all_user(request):
     :param request: for get all user details.
     :return: It returns List of all user.
     """
-    logger.debug("get all user from database")
+
     users = User.objects.all().filter(is_active=True)
     if users.exists():
         user_list = UserSerializer(instance=users, many=True)
+        logger.debug("get all user from database")
         return Response(user_list.data)
     else:
+        logger.debug("No users found")
         return Response("No users")
 
 
@@ -61,10 +65,12 @@ def get_user_by_id(request, user_id):
         user_details = User.objects.get(pk=user_id)
         if user_details.is_active:
             user_details = UserSerializer(user_details)
+            logger.debug(f"get particular user details of id {user_id}")
             return Response(user_details.data)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
+        logger.debug(f"No user found for this id")
         return Response({'message': 'No such user'})
 
 
@@ -84,8 +90,10 @@ def update_user_by_id(request, user_id):
                                            data=request.data, partial=True)
         updated_user_data.is_valid(raise_exception=True)
         updated_user_data.save()
+        logger.debug(f"updating particular user detail of id {user_id}")
         return Response(updated_user_data.data)
     except ValidationError as error:
+        logger.debug(f"validation error {error.message}")
         return Response({'message': error.message}, status=400)
 
 
@@ -104,10 +112,12 @@ def delete_user_by_id(request, user_id):
         if user_details.is_active:
             user_details.is_active = False
             user_details.save()
+            logger.debug(f"Deactivate user id {user_id}'s active status")
             return Response(f"user id {user_id} is deleted_successfully")
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
+        logger.debug(f"No user found for this id")
         return Response(f"No user found for this id")
 
 
@@ -117,10 +127,12 @@ def get_all_subscription_by_user_id(request, user_id):
         user_details = User.objects.get(pk=user_id)
         if user_details.is_active:
             user_details = UserInfoSerializer(user_details)
+            logger.debug(f"get all subscription for user id {user_id}")
             return Response(user_details.data)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:
+        logger.debug(f'no user found for this {user_id}')
         return Response("no user found")
 
 
@@ -132,12 +144,15 @@ def get_payments_by_user_id(request, user_id):
         if user_details.is_active:
             print(len(payment_list))
             if payment_list:
+                logger.debug(f"get all payments for user id {user_id}")
                 response = payment_list
             else:
+                logger.debug(f"No payment found for user id {user_id}")
                 response = "no payment found"
         else:
             raise ObjectDoesNotExist()
     except ObjectDoesNotExist:
+        logger.debug(f"No user found for user id {user_id}")
         response = "no user found"
 
     return Response(response)

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -8,6 +9,8 @@ from rest_framework.response import Response
 
 from card.models import Card
 from card.serializer import CardSerializer
+
+logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
@@ -27,8 +30,10 @@ def create_card(request):
         new_card_details = CardSerializer(data=request.data)
         new_card_details.is_valid(raise_exception=True)
         new_card_details.save()
+        logger.debug(f'new card details created with id {new_card_details.data["id"]}')
         return Response(new_card_details.data)
     except ValidationError as error:
+        logger.debug(f"validation error : {error.message}")
         return Response({"message": error.message})
 
 
@@ -46,10 +51,12 @@ def get_card_by_id(request, card_id):
         card_details = Card.objects.get(pk=card_id)
         if card_details.is_active:
             card_details = CardSerializer(card_details)
+            logger.debug(f"get card details for card id {card_id}")
             return Response(card_details.data)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
+        logger.debug(f"card details not found for id {card_id} ")
         return Response("no card details found")
 
 
@@ -65,8 +72,10 @@ def get_all_card(request):
     card_list = Card.objects.filter(is_active=True)
     if card_list:
         card_list = CardSerializer(instance=card_list, many=True)
+        logger.debug(f"Get all card details")
         return Response(card_list.data)
     else:
+        logger.debug("no card details found")
         return Response("no card details available")
 
 
@@ -85,7 +94,10 @@ def update_card_by_id(request, card_id):
         new_card_details = CardSerializer(existing_card_details, data=request.data, partial=True)
         new_card_details.is_valid(raise_exception=True)
         new_card_details.save()
+        logger.debug(f"Updating card details for id {card_id}")
+        return Response("card details successfully updated")
     except ValidationError as error:
+        logger.debug(f"validation error while updating card details of id{card_id}")
         return Response({"message": error.message})
 
 
@@ -103,9 +115,11 @@ def delete_card_by_id(request, card_id):
         card_details = Card.objects.get(pk=card_id)
         if card_details.is_active:
             card_details.is_active = False
+            logger.debug(f"deleting card for id {card_id}")
             card_details.save()
         else:
             raise ObjectDoesNotExist
 
     except ObjectDoesNotExist:
+        logger.debug(f"card details not found")
         return Response("no card details found")

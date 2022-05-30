@@ -19,12 +19,13 @@ def validate_email(value):
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(validators=[validate_email])
-
+    id = serializers.IntegerField(read_only=True)
     # email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
     class Meta:
         model = User
         fields = ("id", "name", "email", "phone_number", "user_name", "password"
                   , "created_at", "updated_at", "is_active", "tenant")
+        read_only_fields = ['id']
 
 
 class UserInfoSerializer(serializers.ModelSerializer):

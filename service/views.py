@@ -15,14 +15,3 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
     serializer_class = ServiceSerializer
     queryset = Service.objects.all()
-
-
-# @api_view(['POST'])
-# def create_service(request):
-#     try:
-#         service_details = ServiceSerializer(data=request.data)
-#         service_details.is_valid(raise_exception=True)
-#         service_details.save()
-#         return Response(service_details.data)
-#     except ValidationError as error:
-#         return Response({"message": error.message})

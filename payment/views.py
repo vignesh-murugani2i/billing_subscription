@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.shortcuts import render
@@ -9,6 +10,8 @@ from payment.models import Payment
 from subscription.models import Subscription
 from subscription.service import set_next_subscription_date
 
+logger = logging.getLogger('root')
+
 
 @api_view(['POST'])
 def make_all_subscriptions_payment(request):
@@ -17,7 +20,7 @@ def make_all_subscriptions_payment(request):
     today_subscription_list = Subscription.objects.filter(is_active=True,
                                                           next_subscription_date__date=today_date
                                                           ).order_by('next_subscription_date')
-
+    logger.debug(f"payment for today subscriptions")
     if today_subscription_list.exist():
         for subscription in today_subscription_list:
             payment = Payment(
@@ -30,6 +33,9 @@ def make_all_subscriptions_payment(request):
             )
             payment.save()
             set_next_subscription_date(subscription)
+
+        logger.debug(f"all subscription's payment successfully done")
         return Response("Subscription payment done successfully")
     else:
+        logger.debug(f"There is no subscription today")
         return Response("There is no subscription today")

@@ -1,3 +1,4 @@
+import logging
 import smtplib
 from datetime import datetime, timedelta, date
 
@@ -16,6 +17,8 @@ from subscription.models import Subscription
 from subscription.serializer import SubscriptionSerializer, SubscriptionInfoSerializer
 from user.models import User
 
+logger = logging.getLogger('root')
+
 
 @api_view(['POST'])
 def create_subscription(request):
@@ -26,10 +29,9 @@ def create_subscription(request):
         if is_duplicate_subscription(request.data):
             response = Response("subscription already exist on this service")
         else:
-            # request.data['start_subscription_date'] = "2022-05-27 00:00:00.000000"
-            # start_date_string = request.data['start_subscription_date']
-            # start_date = datetime.strptime(start_date_string, "%Y-%m-%d")
-            next_subscription_date = datetime.now()
+            start_date_string = request.data['start_subscription_date']
+            next_subscription_date = datetime.strptime(start_date_string, "%Y-%m-%d")
+            next_subscription_date = next_subscription_date.date()
             subscription_end_date = calculate_subscription_end_date(
                 plan_type, int(request.data['cycle_count']), next_subscription_date)
             request.data['next_subscription_date'] = next_subscription_date
@@ -38,15 +40,19 @@ def create_subscription(request):
             new_subscription = SubscriptionSerializer(data=request.data)
             new_subscription.is_valid(raise_exception=True)
             new_subscription.save()
-            if next_subscription_date.date() == date.today():
-                create_payment(new_subscription.data['id'])
-
+            logger.debug(f"subscription created for {new_subscription.data['id']}")
             response = Response(new_subscription.data)
+            if next_subscription_date == date.today():
+                logger.debug(f"subscription created for {new_subscription.data['id']}"
+                             f" with instant payment ")
+                instant_subscription = create_payment(new_subscription.data['id'])
+                instant_subscription = SubscriptionSerializer(instant_subscription)
+                response = Response(instant_subscription.data)
 
     except ValidationError as error:
+        logger.debug(f"bad request error {error.message}")
         response = Response({'message': error.message}, status=400)
 
-    print("subscription done")
     return response
 
 
@@ -56,11 +62,13 @@ def get_subscription_by_id(request, subscription_id):
         subscription_details = Subscription.objects.get(pk=subscription_id)
         if subscription_details.is_active:
             subscription_details = SubscriptionSerializer(subscription_details)
+            logger.debug(f"get particular subscription for id {subscription_id}")
             return Response(subscription_details.data)
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
-        return Response("no user found")
+        logger.debug(f"no user subscription for this id {subscription_id}")
+        return Response("no subscription found")
 
 
 @api_view(['GET'])
@@ -68,9 +76,10 @@ def get_all_subscription(request):
     subscriptions = Subscription.objects.filter(is_active=True)
     if subscriptions.exists():
         subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
+        logger.debug("Get all subscription")
         return Response(subscriptions.data)
     else:
-        print("no subscriptions")
+        logger.debug(f"no subscription available")
         return Response("No subscriptions")
 
 
@@ -96,8 +105,11 @@ def update_subscription_by_id(request, subscription_id):
         # new_subscription = SubscriptionSerializer(data=request.data)
         updated_subscription_data.is_valid(raise_exception=True)
         updated_subscription_data.save()
+        logger.debug(f"subscription updated successfully for this id {subscription_id}")
         return Response(updated_subscription_data.data)
     except ValidationError as error:
+        logger.debug(f"error while updating subscription id {subscription_id} :"
+                     f"{error.message}")
         return Response({'message': error.message}, status=400)
 
 
@@ -106,10 +118,12 @@ def delete_subscription_by_id(request, subscription_id):
         subscription_details = Subscription.objects.get(pk=subscription_id)
         if subscription_details.is_active:
             subscription_details.is_active = False
+            logger.debug(f"subscription id {subscription_id} is deleted")
             return Response(f"subscription id {subscription_id} is deleted_successfully")
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist:
+        logger.debug(f"no subscription found for this id {subscription_id} ")
         return Response(f"Subscription not found")
 
 
@@ -130,13 +144,11 @@ def calculate_remind_date(next_subscription_date):
     :param next_subscription_date: next subscription date of user subscribed service
     :return: returns reminder_date
     """
-    if next_subscription_date.date() > date.today() + timedelta(days=2):
+    if next_subscription_date > date.today() + timedelta(days=2):
         remind_date = next_subscription_date - timedelta(days=2)
     else:
         remind_date = next_subscription_date
 
-    # remind_date = datetime.strptime(remind_date, "%Y-%m-%d")
-    print(type(remind_date))
     return remind_date
 
 
@@ -170,7 +182,6 @@ def remind_all_subscriptions(request):
 
 
 def is_duplicate_subscription(new_subscription_details):
-    print(new_subscription_details)
     is_subscription_exist = True
     existing_subscription = Subscription.objects.filter(
         user_id=new_subscription_details["user"],
@@ -182,8 +193,3 @@ def is_duplicate_subscription(new_subscription_details):
         is_subscription_exist = False
 
     return is_subscription_exist
-
-# @api_view(['GET'])
-# def test(request):
-#     test_func.delay()
-#     return Response("done")

@@ -6,14 +6,14 @@ from tenant.models import Tenant
 
 class User(models.Model):
     name = models.CharField(max_length=250)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     phone_number = models.BigIntegerField(validators=[
         RegexValidator(
             regex='^[6789]\d{9}$',
             message='Phone number must be 10 digits and starts with either(6,7,8,9)',
             code='invalid_number'
         ),
-    ])
+    ], unique=True)
     user_name = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True, )

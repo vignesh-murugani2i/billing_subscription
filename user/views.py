@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from payment.service import get_all_payments_by_user_id
 from user.models import User
-from user.serializer import UserSerializer, UserInfoSerializer
+from user.serializer import UserSerializer
 
 logger = logging.getLogger('root')
 
@@ -26,7 +26,7 @@ def create_user(request):
         new_user.is_valid(raise_exception=True)
         new_user.save()
         logger.debug('New User created with Id: {}'.format(new_user.data['id']))
-        return Response(new_user.data)
+        return Response(('New User created with Id: {}'.format(new_user.data['id'])))
     except ValidationError as error:
         logger.debug(f'Validation error:{error.message}')
         return Response({'message': error.message}, status=400)
@@ -40,10 +40,11 @@ def get_all_user(request):
     :param request: for get all user details.
     :return: It returns List of all user.
     """
+    fields = ("id", "name", "email", "phone_number", "tenant")
 
     users = User.objects.all().filter(is_active=True)
     if users.exists():
-        user_list = UserSerializer(instance=users, many=True)
+        user_list = UserSerializer(instance=users, many=True, fields=fields)
         logger.debug("get all user from database")
         return Response(user_list.data)
     else:
@@ -60,11 +61,12 @@ def get_user_by_id(request, user_id):
     :param user_id: it holds user id.
     :return: It returns particular user details.
     """
+    fields = ("id", "name", "email", "phone_number", "tenant")
 
     try:
         user_details = User.objects.get(pk=user_id)
         if user_details.is_active:
-            user_details = UserSerializer(user_details)
+            user_details = UserSerializer(user_details, fields=fields)
             logger.debug(f"get particular user details of id {user_id}")
             return Response(user_details.data)
         else:

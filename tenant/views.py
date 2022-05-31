@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from tenant.models import Tenant
-from tenant.serializer import TenantSerializer, TenantInfoSerializer
+from tenant.serializer import TenantSerializer
 
 logger = logging.getLogger('root')
 
@@ -24,7 +24,7 @@ def create_tenant(request):
         new_tenant.is_valid(raise_exception=True)
         new_tenant.save()
         logger.debug('New Tenant created with Id: {}'.format(new_tenant.data['id']))
-        return Response(new_tenant.data)
+        return Response('New Tenant created with Id: {}'.format(new_tenant.data['id']))
     except ValidationError as error:
         logger.debug(f'Validation error:{error.message}')
         return Response({'message': error.message}, status=400)
@@ -39,11 +39,12 @@ def get_tenant_by_id(request, tenant_id):
     :param tenant_id: it holds tenant id.
     :return: It returns particular tenant details.
     """
+    fields = ("id", "name",)
 
     try:
         tenant_details = Tenant.objects.get(pk=tenant_id)
         if tenant_details.is_active:
-            tenant_details = TenantSerializer(tenant_details)
+            tenant_details = TenantSerializer(tenant_details, fields=fields)
             logger.debug(f"get particular tenant details of id {tenant_id}")
             return Response(tenant_details.data)
         else:
@@ -62,9 +63,10 @@ def get_all_tenant(request):
     :return: It returns List of all tenant.
     """
 
+    fields = ("id", "name")
     tenants = Tenant.objects.filter(is_active=True)
     if tenants.exists():
-        tenant_list = TenantSerializer(instance=tenants, many=True)
+        tenant_list = TenantSerializer(instance=tenants, many=True, fields=fields)
         logger.debug("get all tenant from database")
         return Response(tenant_list.data)
     else:
@@ -120,11 +122,13 @@ def delete_tenant_by_id(request, tenant_id):
 
 
 @api_view(['GET'])
-def get_all_user_by_tenant_id(request,tenant_id):
+def get_all_user_by_tenant_id(request, tenant_id):
+    fields = ("id", "name", "users")
+
     try:
         tenant_details = Tenant.objects.get(pk=tenant_id)
         if tenant_details.is_active:
-            tenant_details = TenantInfoSerializer(tenant_details)
+            tenant_details = TenantSerializer(tenant_details,fields=fields)
             logger.debug(f"get all users of tenant id {tenant_id}")
             return Response(tenant_details.data)
         else:

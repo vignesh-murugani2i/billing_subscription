@@ -14,7 +14,7 @@ from payment.service import create_payment
 from plan.models import Plan
 from service.models import Service
 from subscription.models import Subscription
-from subscription.serializer import SubscriptionSerializer, SubscriptionInfoSerializer
+from subscription.serializer import SubscriptionSerializer
 from user.models import User
 
 logger = logging.getLogger('root')
@@ -41,13 +41,16 @@ def create_subscription(request):
             new_subscription.is_valid(raise_exception=True)
             new_subscription.save()
             logger.debug(f"subscription created for {new_subscription.data['id']}")
-            response = Response(new_subscription.data)
             if next_subscription_date == date.today():
                 logger.debug(f"subscription created for {new_subscription.data['id']}"
                              f" with instant payment ")
                 instant_subscription = create_payment(new_subscription.data['id'])
                 instant_subscription = SubscriptionSerializer(instant_subscription)
-                response = Response(instant_subscription.data)
+                response = Response(f"payment successfully done for your subscription id "
+                                    f"{new_subscription.data['id']}")
+            else:
+                response = Response(f"subscription successfully created with id "
+                                    f"{new_subscription.data['id']}")
 
     except ValidationError as error:
         logger.debug(f"bad request error {error.message}")
@@ -58,10 +61,13 @@ def create_subscription(request):
 
 @api_view(['GET'])
 def get_subscription_by_id(request, subscription_id):
+    fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
+              "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
     try:
         subscription_details = Subscription.objects.get(pk=subscription_id)
         if subscription_details.is_active:
-            subscription_details = SubscriptionSerializer(subscription_details)
+            subscription_details = SubscriptionSerializer(subscription_details,
+                                                          fields=fields)
             logger.debug(f"get particular subscription for id {subscription_id}")
             return Response(subscription_details.data)
         else:
@@ -73,9 +79,11 @@ def get_subscription_by_id(request, subscription_id):
 
 @api_view(['GET'])
 def get_all_subscription(request):
+    fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
+              "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
     subscriptions = Subscription.objects.filter(is_active=True)
     if subscriptions.exists():
-        subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
+        subscriptions = SubscriptionSerializer(instance=subscriptions, many=True, fields=fields)
         logger.debug("Get all subscription")
         return Response(subscriptions.data)
     else:
@@ -106,7 +114,7 @@ def update_subscription_by_id(request, subscription_id):
         updated_subscription_data.is_valid(raise_exception=True)
         updated_subscription_data.save()
         logger.debug(f"subscription updated successfully for this id {subscription_id}")
-        return Response(updated_subscription_data.data)
+        return Response(f"subscription updated successfully for this id {subscription_id}")
     except ValidationError as error:
         logger.debug(f"error while updating subscription id {subscription_id} :"
                      f"{error.message}")
@@ -165,7 +173,7 @@ def remind_all_subscriptions(request):
         mail_server.starttls()
         mail_server.login("subscriptionforyou45@gmail.com", "just$for$demo")
         today_date = date.today()
-        reminder_list = SubscriptionInfoSerializer(instance=Subscription.objects.filter(
+        reminder_list = SubscriptionSerializer(instance=Subscription.objects.filter(
             remind_date="2022-05-20"), many=True)
         for subscription_detail in reminder_list.data:
             plan_amount = subscription_detail["plan"]['amount']

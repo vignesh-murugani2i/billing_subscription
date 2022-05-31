@@ -30,7 +30,7 @@ def create_card(request):
         new_card_details = CardSerializer(data=request.data)
         new_card_details.is_valid(raise_exception=True)
         new_card_details.save()
-        logger.debug(f'new card details created with id {new_card_details.data["id"]}')
+        logger.debug(f'new card details created with id {new_card_details.data["card_number"]}')
         return Response(new_card_details.data)
     except ValidationError as error:
         logger.debug(f"validation error : {error.message}")

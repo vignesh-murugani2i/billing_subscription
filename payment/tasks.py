@@ -13,7 +13,7 @@ def make_all_subscriptions_payment(self):
     today_date = date.today()
     today_date = "2022-05-24"
     today_subscription_list = Subscription.objects.filter(is_active=True,
-                                                          next_subscription_date__date=today_date
+                                                          next_subscription_date=today_date
                                                           ).order_by('next_subscription_date')
     for subscription in today_subscription_list:
         payment = Payment(

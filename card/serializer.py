@@ -23,11 +23,13 @@ class CardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Card
-        fields = ("id", "card_type", "card_number", "cvv_number", "expires_date", "user")
+        fields = ("id", "card_type", "card_number", "salt_value","cvv_number", "expires_date", "user")
 
     def create(self, validated_data):
         salt_value = generate_key()
         validated_data['card_number'] = encrypt(validated_data['card_number'], salt_value)
+        validated_data['cvv_number'] = encrypt(validated_data['cvv_number'], salt_value)
+        validated_data['salt_value'] = salt_value
         card = Card.objects.create(**validated_data)
         return card
 

@@ -5,9 +5,20 @@ from django.core.mail import send_mail
 from django.utils.datetime_safe import date
 
 from billing_subscription_api import settings
+from subscription.models import Subscription
+from subscription.serializer import SubscriptionSerializer
 
 
 def send_mail_to_subscriber(mail_subject, mail_message, subscriber_mail):
+    """
+    sends mail to subscriber with some information like subscription ended
+    or remind subscription
+
+    :param mail_subject: subject message of mail
+    :param mail_message: body message of mail
+    :param subscriber_mail: it holds subscriber mail id
+    :return:
+    """
     is_mail_sent = True
     try:
         send_mail(
@@ -23,6 +34,12 @@ def send_mail_to_subscriber(mail_subject, mail_message, subscriber_mail):
 
 
 def set_next_subscription_date(subscription):
+    """
+    Sets next subscription date of subscription.
+
+    :param subscription: It holds subscription details
+    :return: It returns next subscription date modified object
+    """
     end_date = subscription.subscription_end_date
 
     if date.today() == end_date:
@@ -46,3 +63,9 @@ def set_next_subscription_date(subscription):
         print(subscription.next_subscription_date)
         subscription.save()
         return subscription
+
+
+def get_subscriptions_by_user_id(user_id):
+    subscriptions = Subscription.objects.filter(user_id=user_id, is_active=True)
+    subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
+    return subscriptions.data

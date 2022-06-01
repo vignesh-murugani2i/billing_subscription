@@ -63,6 +63,7 @@ def create_subscription(request):
 def get_subscription_by_id(request, subscription_id):
     fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
               "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
+
     try:
         subscription_details = Subscription.objects.get(pk=subscription_id)
         if subscription_details.is_active:
@@ -190,6 +191,12 @@ def remind_all_subscriptions(request):
 
 
 def is_duplicate_subscription(new_subscription_details):
+    """
+    Checks whether given subscription is already exist or not.
+
+    :param new_subscription_details: It holds new subscription details
+    :return: Return whether it is duplicate subscription or not
+    """
     is_subscription_exist = True
     existing_subscription = Subscription.objects.filter(
         user_id=new_subscription_details["user"],

@@ -15,6 +15,12 @@ logger = logging.getLogger('root')
 
 @api_view(['POST'])
 def make_all_subscriptions_payment(request):
+    """
+    Makes current date's all subscription payment.
+
+    :param request: It holds request param
+    :return: It returns subscription done or no subscription available message
+    """
     today_date = date.today()
     today_date = "2022-05-24"
     today_subscription_list = Subscription.objects.filter(is_active=True,

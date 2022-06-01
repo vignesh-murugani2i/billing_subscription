@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from payment.service import get_all_payments_by_user_id
+from subscription.service import get_subscriptions_by_user_id
 from user.models import User
 from user.serializer import UserSerializer
 
@@ -125,27 +126,47 @@ def delete_user_by_id(request, user_id):
 
 @api_view(['GET'])
 def get_all_subscription_by_user_id(request, user_id):
+    """
+    Get all subscriptions of particular user by user id.
+
+    :param request: it holds request params
+    :param user_id: it holds user id
+    :return: it returns subscription list of particular user
+    """
+
     try:
         user_details = User.objects.get(pk=user_id)
         if user_details.is_active:
-            user_details = UserInfoSerializer(user_details)
+            user_details = get_subscriptions_by_user_id(user_id)
             logger.debug(f"get all subscription for user id {user_id}")
-            return Response(user_details.data)
+            if len(user_details) == 0:
+                response = "no subscription found"
+            else:
+                response = user_details
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:
         logger.debug(f'no user found for this {user_id}')
-        return Response("no user found")
+        response = "no user found"
+
+    return Response(response)
 
 
 @api_view(['GET'])
 def get_payments_by_user_id(request, user_id):
+    """
+    Get all payments of particular user.
+
+    :param request: It holds all request params
+    :param user_id: It holds user id
+    :return: It returns all payment list of particular user.
+    """
+
     try:
         user_details = User.objects.get(pk=user_id)
-        payment_list = get_all_payments_by_user_id(user_id)
         if user_details.is_active:
-            print(len(payment_list))
-            if payment_list:
+            payment_list = get_all_payments_by_user_id(user_id)
+            if len(payment_list) > 0:
                 logger.debug(f"get all payments for user id {user_id}")
                 response = payment_list
             else:

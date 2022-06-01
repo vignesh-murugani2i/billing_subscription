@@ -6,12 +6,12 @@ from utils.dynamic_serializer import DynamicFieldsModelSerializer
 
 
 class TenantSerializer(DynamicFieldsModelSerializer):
-    users = UserSerializer(many=True, read_only=True)
+    users = UserSerializer(many=True, read_only=True,
+                           fields=("id", "name", "email", "phone_number", "tenant"))
 
     class Meta:
         model = Tenant
-        fields = ("id", "name", "username", "password", "is_active","users")
-
+        fields = ("id", "name", "username", "password", "is_active", "users")
 
 # class TenantInfoSerializer(serializers.ModelSerializer):
 #     users = UserSerializer(many=True, read_only=True)

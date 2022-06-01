@@ -123,8 +123,15 @@ def delete_tenant_by_id(request, tenant_id):
 
 @api_view(['GET'])
 def get_all_user_by_tenant_id(request, tenant_id):
-    fields = ("id", "name", "users")
+    """
+    Gets all users of tenant by tenant id.
 
+    :param request: It holds all request params
+    :param tenant_id: It holds tenant id.
+    :return: It returns all user list of tenant
+    """
+
+    fields = ("id", "name", "users")
     try:
         tenant_details = Tenant.objects.get(pk=tenant_id)
         if tenant_details.is_active:

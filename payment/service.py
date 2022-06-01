@@ -11,6 +11,13 @@ logger = logging.getLogger('root')
 
 
 def create_payment(subscription_id):
+    """
+    Created instant payment of new subscription.
+
+    :param subscription_id: It holds subscription id
+    :return: It returns new subscription object
+    """
+
     subscription = Subscription.objects.get(pk=subscription_id)
     payment = Payment(
         user=subscription.user,

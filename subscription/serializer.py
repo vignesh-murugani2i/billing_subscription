@@ -11,11 +11,10 @@ from utils.dynamic_serializer import DynamicFieldsModelSerializer
 class SubscriptionSerializer(DynamicFieldsModelSerializer):
     service = ServiceSerializer(many=False, read_only=True)
     plan = PlanSerializer(many=False, read_only=True)
-    #user = UserSerializer(many=False, read_only=True)
+    # user = UserSerializer(many=False, read_only=True)
 
     plan = serializers.SerializerMethodField()
     service = serializers.SerializerMethodField()
-
 
     def get_plan(self, obj):
         return obj.plan.amount
@@ -25,11 +24,10 @@ class SubscriptionSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ("id", "tenant", "user", "service", "plan", "card", "remind_days",
-                  "account_mail", "start_subscription_date", "cycle_count",
-                  "next_subscription_date", "subscription_end_date", "remind_date")
-        # fields = '__all__'
-
+        # fields = ("id", "tenant", "user", "service", "plan", "card", "remind_days",
+        #           "account_mail", "start_subscription_date", "cycle_count",
+        #           "next_subscription_date", "subscription_end_date", "remind_date")
+        fields = '__all__'
 
 # class SubscriptionInfoSerializer(serializers.ModelSerializer):
 #     service = ServiceSerializer(many=False, read_only=True)

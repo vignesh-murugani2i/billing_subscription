@@ -25,7 +25,7 @@ class UserSerializer(DynamicFieldsModelSerializer):
     # email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
     class Meta:
         model = User
-        fields = ("id", "name", "email", "phone_number", "user_name", "password"
+        fields = ("id", "name", "email", "phone_number",  "password"
                   , "created_at", "updated_at", "is_active", "tenant")
 
 

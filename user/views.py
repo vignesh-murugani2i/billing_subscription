@@ -94,7 +94,7 @@ def update_user_by_id(request, user_id):
         updated_user_data.is_valid(raise_exception=True)
         updated_user_data.save()
         logger.debug(f"updating particular user detail of id {user_id}")
-        return Response(updated_user_data.data)
+        return Response(f"successfully updated user detail of id {user_id}")
     except ValidationError as error:
         logger.debug(f"validation error {error.message}")
         return Response({'message': error.message}, status=400)

@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from plan.models import Plan
 from plan.serializer import PlanSerializer
@@ -9,3 +10,9 @@ class PlanViewSet(viewsets.ModelViewSet):
 
     serializer_class = PlanSerializer
     queryset = Plan.objects.all()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print(instance)
+        self.perform_destroy(instance)
+        return Response(f"Plan id {self.kwargs.get('pk')} deleted")

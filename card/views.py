@@ -30,8 +30,8 @@ def create_card(request):
         new_card_details = CardSerializer(data=request.data)
         new_card_details.is_valid(raise_exception=True)
         new_card_details.save()
-        logger.debug(f'new card details created with id {new_card_details.data["card_number"]}')
-        return Response(new_card_details.data)
+        logger.debug(f'new card details created with id {new_card_details.data["id"]}')
+        return Response(f'new card details added successfully')
     except ValidationError as error:
         logger.debug(f"validation error : {error.message}")
         return Response({"message": error.message})
@@ -95,7 +95,7 @@ def update_card_by_id(request, card_id):
         new_card_details.is_valid(raise_exception=True)
         new_card_details.save()
         logger.debug(f"Updating card details for id {card_id}")
-        return Response("card details successfully updated")
+        return Response(f"card id {card_id}'s details successfully updated")
     except ValidationError as error:
         logger.debug(f"validation error while updating card details of id{card_id}")
         return Response({"message": error.message})

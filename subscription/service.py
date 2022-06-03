@@ -66,6 +66,8 @@ def set_next_subscription_date(subscription):
 
 
 def get_subscriptions_by_user_id(user_id):
+    fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
+              "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
     subscriptions = Subscription.objects.filter(user_id=user_id, is_active=True)
-    subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
+    subscriptions = SubscriptionSerializer(instance=subscriptions, many=True,fields=fields)
     return subscriptions.data

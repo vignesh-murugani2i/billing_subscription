@@ -10,5 +10,6 @@ router.register('', ServiceViewSet, basename='service')
 urlpatterns = [
     path('plans/<int:service_id>/', ServiceViewSet.as_view({"get": "get_plans_by_service_id"}),
          name="get_plans_by_service_id"),
+    path('', include(router.urls))
 
 ]

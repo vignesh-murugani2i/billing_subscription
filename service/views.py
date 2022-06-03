@@ -23,3 +23,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
         plans = Plan.objects.filter(service_id=service_id)
         plans = PlanSerializer(instance=plans, many=True, )
         return Response(plans.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print(instance)
+        self.perform_destroy(instance)
+        return Response(f"service id {self.kwargs.get('pk')} deleted")

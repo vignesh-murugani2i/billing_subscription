@@ -91,7 +91,7 @@ def update_tenant_by_id(request, tenant_id):
         updated_tenant_data.is_valid(raise_exception=True)
         updated_tenant_data.save()
         logger.debug(f"updating particular tenant detail of id {tenant_id}")
-        return Response(updated_tenant_data.data)
+        return Response(f"updating particular tenant detail of id {tenant_id}")
     except ValidationError as error:
         logger.debug(f"validation error {error.message}")
         return Response({'message': error.message}, status=400)
@@ -113,7 +113,7 @@ def delete_tenant_by_id(request, tenant_id):
             tenant_details.is_active = False
             tenant_details.save()
             logger.debug(f"Deactivate tenant id {tenant_id}'s active status")
-            return Response("tenant deleted successfully")
+            return Response(f"tenant id {tenant_id} deleted successfully")
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:

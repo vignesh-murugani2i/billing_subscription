@@ -7,9 +7,9 @@ class Card(models.Model):
     """This class provides model for card"""
 
     CARD_CHOICE = (
-        (1, "visa"),
-        (2, "rupay"),
-        (3, "master card")
+        ("Visa", "Visa"),
+        ('Rupay', "Rupay"),
+        ("Master Card", "Master Card")
     )
     card_type = models.CharField(choices=CARD_CHOICE, max_length=15)
     card_number = models.CharField(max_length=256, null=False)

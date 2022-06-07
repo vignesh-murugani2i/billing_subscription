@@ -14,16 +14,9 @@ from utils.encryption_decryption import encrypt, generate_key
 
 class CardSerializer(serializers.ModelSerializer):
 
-    # def get_card_number(self, card_details):
-    #     print(card_details)
-    #     encrypted_card_number = card_details.card_number
-    #     salt_value = generate_key()
-    #     encrypted_card_number = encrypt(encrypted_card_number, salt_value)
-    #     return encrypted_card_number
-
     class Meta:
         model = Card
-        fields = ("id", "card_type", "card_number", "salt_value","cvv_number", "expires_date", "user")
+        fields = ("id", "card_type", "card_number", "salt_value", "cvv_number", "expires_date", "user")
 
     def create(self, validated_data):
         salt_value = generate_key()

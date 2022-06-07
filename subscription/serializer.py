@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, request
 
 from plan.serializer import PlanSerializer
 from service.serializer import ServiceSerializer
@@ -17,17 +17,23 @@ class SubscriptionSerializer(DynamicFieldsModelSerializer):
     service = serializers.SerializerMethodField()
 
     def get_plan(self, obj):
-        return obj.plan.amount
+        if self.context.get("request").method == "GET":
+            return obj.plan.amount
+        else:
+            return obj.plan.id
 
     def get_service(self, obj):
-        return obj.service.name
+        if self.context.get("request").method == "GET":
+            return obj.service.name
+        else:
+            return obj.service.id
 
     class Meta:
         model = Subscription
         fields = ("id", "tenant", "user", "service", "plan", "card", "remind_days",
                   "account_mail", "start_subscription_date", "cycle_count",
                   "next_subscription_date", "subscription_end_date", "remind_date")
-        #fields = '__all__'
+        # fields = '__all__'
 
 # class SubscriptionInfoSerializer(serializers.ModelSerializer):
 #     service = ServiceSerializer(many=False, read_only=True)

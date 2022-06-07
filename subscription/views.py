@@ -68,7 +68,7 @@ def get_subscription_by_id(request, subscription_id):
         subscription_details = Subscription.objects.get(pk=subscription_id)
         if subscription_details.is_active:
             subscription_details = SubscriptionSerializer(subscription_details,
-                                                          fields=fields)
+                                                          fields=fields, context={'request': request})
             logger.debug(f"get particular subscription for id {subscription_id}")
             return Response(subscription_details.data)
         else:

@@ -1,3 +1,5 @@
+from django.contrib.auth.password_validation import validate_password
+from oauth2_provider.models import Application
 from rest_framework import serializers
 
 # from subscription.serializer import SubscriptionSerializer
@@ -5,7 +7,6 @@ from rest_framework.validators import UniqueValidator
 
 from subscription.serializer import SubscriptionSerializer
 from user.models import User
-
 
 # def validate_email(self, value):
 #     lower_email = value.lower()
@@ -21,18 +22,31 @@ from utils.dynamic_serializer import DynamicFieldsModelSerializer
 
 
 class UserSerializer(DynamicFieldsModelSerializer):
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password])
 
-    # email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
     class Meta:
         model = User
-        fields = ("id", "name", "email", "phone_number",  "password"
+        fields = ("id", "name", "email", "phone_number", "password"
                   , "created_at", "updated_at", "is_active", "tenant")
 
+    def create(self, validated_data):
+        user = User.objects.create(
+            name=validated_data['name'],
+            email=validated_data['email'],
+            phone_number=validated_data['phone_number'],
+            tenant=validated_data['tenant']
+        )
 
-# class UserInfoSerializer(serializers.ModelSerializer):
-#     subscriptions = SubscriptionSerializer(many=True, read_only=True)
-#
-#     class Meta:
-#         model = User
-#         fields = ("id", "name", "email", "phone_number", "user_name", "password"
-#                   , "created_at", "updated_at", "is_active", "tenant", "subscriptions")
+        user.set_password(validated_data['password'])
+        user.save()
+        application = Application.objects.create(
+            user=user,
+            authorization_grant_type='password',
+            client_type="confidential",
+            name=user.name
+        )
+        application.save()
+        print(application)
+        return user
+

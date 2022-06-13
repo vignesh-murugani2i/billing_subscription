@@ -22,8 +22,14 @@ def create_user(request):
     :return: It returns newly created user details with user id
     """
 
+    print(("this is logged user"))
+    current_user = request.user
+    current_user_id = current_user.id
+
     try:
+        request.data["created_by"] = current_user_id
         new_user = UserSerializer(data=request.data)
+
         new_user.is_valid(raise_exception=True)
         new_user.save()
         logger.debug('New User created with Id: {}'.format(new_user.data['id']))

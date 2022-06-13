@@ -28,14 +28,21 @@ class UserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = User
         fields = ("id", "name", "email", "phone_number", "password"
-                  , "created_at", "updated_at", "is_active", "tenant")
+                  , "created_at", "updated_at", "is_active", "is_staff", "is_admin",
+                  "is_superuser", "created_by", "user_role")
 
     def create(self, validated_data):
         user = User.objects.create(
-            name=validated_data['name'],
-            email=validated_data['email'],
-            phone_number=validated_data['phone_number'],
-            tenant=validated_data['tenant']
+            # name=validated_data['name'],
+            # email=validated_data['email'],
+            # phone_number=validated_data['phone_number'],
+            # is_staff=validated_data['is_staff'],
+            # is_admin=validated_data['is_admin'],
+            # is_superuser=validated_data['is_superuser'],
+            # created_by=validated_data['created_by'],
+            # user_role=validated_data['user_role'],
+            # tenant=validated_data['tenant']
+            **validated_data
         )
 
         user.set_password(validated_data['password'])
@@ -43,10 +50,9 @@ class UserSerializer(DynamicFieldsModelSerializer):
         application = Application.objects.create(
             user=user,
             authorization_grant_type='password',
-            client_type="confidential",
+            client_type="public",
             name=user.name
         )
         application.save()
         print(application)
         return user
-

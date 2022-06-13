@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from login import views
+
 urlpatterns = [
     path('', include('subscription.urls')),
     path('', include('payment.urls')),
@@ -26,4 +28,5 @@ urlpatterns = [
     path('plan/', include('plan.urls')),
     path('admin/', admin.site.urls),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('login/', views.login_user),
 ]

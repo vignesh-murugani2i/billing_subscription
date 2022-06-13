@@ -6,8 +6,8 @@ from utils.dynamic_serializer import DynamicFieldsModelSerializer
 
 
 class TenantSerializer(DynamicFieldsModelSerializer):
-    users = UserSerializer(many=True, read_only=True,
-                           fields=("id", "name", "email", "phone_number", "tenant"))
+    # users = UserSerializer(many=True, read_only=True,
+    #                        fields=("id", "name", "email", "phone_number", "tenant"))
 
     class Meta:
         model = Tenant

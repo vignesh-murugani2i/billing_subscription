@@ -91,7 +91,7 @@ def update_tenant_by_id(request, tenant_id):
         updated_tenant_data.is_valid(raise_exception=True)
         updated_tenant_data.save()
         logger.debug(f"updating particular tenant detail of id {tenant_id}")
-        return Response(f"updating particular tenant detail of id {tenant_id}")
+        return Response(f"updated particular tenant detail of id {tenant_id}")
     except ValidationError as error:
         logger.debug(f"validation error {error.message}")
         return Response({'message': error.message}, status=400)

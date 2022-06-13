@@ -1,6 +1,8 @@
 from django.core.validators import RegexValidator
 from django.db import models
 
+# from user.models import User
+
 
 class Tenant(models.Model):
     name = models.CharField(max_length=200)
@@ -13,3 +15,4 @@ class Tenant(models.Model):
         ),
     ])
     is_active = models.BooleanField(default=True)
+    #created_by = models.ForeignKey(User, default=None)

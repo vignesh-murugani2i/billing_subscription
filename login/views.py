@@ -30,13 +30,15 @@ def login_user(request):
             "username": request.data['username'],
             "password": request.data['password'],
             "client_id": app_obj[0].client_id,
-            "scope" : "read"
-            # "client_secret": app_obj[0].client_secret
+            "scope": "read"
         }
+        # if user.is_active or not user.is_admin or not user.is_staff or not user.is_superuser:
+        #     print("welcome")
+        #     data_dict["scope"] = 'read'
         token_obj = requests.post(url=url, data=data_dict)
         token_obj = json.loads(token_obj.text)
-        print(">>>>>>>>>>>", token_obj.keys())
-        # return Response(request.user.id)
+        # print(">>>>>>>>>>>", token_obj.keys())
+        #return Response("ok")
     else:
         return Response("not ok")
 

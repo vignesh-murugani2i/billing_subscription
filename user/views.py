@@ -2,6 +2,7 @@ import logging
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.shortcuts import render
+from oauth2_provider.decorators import protected_resource
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -22,7 +23,7 @@ def create_user(request):
     :return: It returns newly created user details with user id
     """
 
-    print(("this is logged user"))
+    print("this is logged user")
     current_user = request.user
     current_user_id = current_user.id
 
@@ -40,6 +41,7 @@ def create_user(request):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=["read1"])
 def get_all_user(request):
     """
     Gets List of all user from database.
@@ -60,6 +62,7 @@ def get_all_user(request):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=["read"])
 def get_user_by_id(request, user_id):
     """
     Gets a particular user by user id.

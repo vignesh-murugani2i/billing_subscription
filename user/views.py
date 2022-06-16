@@ -15,6 +15,7 @@ logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
+@protected_resource(scopes=['admin'])
 def create_user(request):
     """
     Creates a new user with user given details in database.
@@ -26,7 +27,9 @@ def create_user(request):
     print("this is logged user")
     current_user = request.user
     current_user_id = current_user.id
-
+    # print(current_user.tenant.id)
+    if current_user.tenant:
+        request.data["tenant"] = current_user.tenant.id
     try:
         request.data["created_by"] = current_user_id
         new_user = UserSerializer(data=request.data)
@@ -41,7 +44,7 @@ def create_user(request):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=["read1"])
+@protected_resource(scopes='superuser')
 def get_all_user(request):
     """
     Gets List of all user from database.
@@ -62,7 +65,6 @@ def get_all_user(request):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=["read"])
 def get_user_by_id(request, user_id):
     """
     Gets a particular user by user id.
@@ -87,6 +89,7 @@ def get_user_by_id(request, user_id):
 
 
 @api_view(['PUT'])
+@protected_resource(scopes=['user'])
 def update_user_by_id(request, user_id):
     """
     Updates a particular user details by user id.
@@ -110,6 +113,7 @@ def update_user_by_id(request, user_id):
 
 
 @api_view(['DELETE'])
+@protected_resource(scopes=['user'])
 def delete_user_by_id(request, user_id):
     """
     Changes a particular user's active status as False in database by user id.
@@ -134,18 +138,20 @@ def delete_user_by_id(request, user_id):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['user'])
 def get_all_subscription_by_user_id(request, user_id):
     """
     Get all subscriptions of particular user by user id.
 
     :param request: it holds request params
-    :param user_id: it holds user id
-    :return: it returns subscription list of particular user
+    :param user_id: it holds user id    :return: it returns subscription list of particular user
     """
-
+    current_user = request.user
+    #current_user_id = current_user.id.
     try:
         user_details = User.objects.get(pk=user_id)
-        if user_details.is_active:
+        is_same_tenant = current_user.tenant == user_details.tenant
+        if user_details.is_active and is_same_tenant:
             user_details = get_subscriptions_by_user_id(user_id)
             logger.debug(f"get all subscription for user id {user_id}")
             if len(user_details) == 0:
@@ -162,6 +168,7 @@ def get_all_subscription_by_user_id(request, user_id):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['user'])
 def get_payments_by_user_id(request, user_id):
     """
     Get all payments of particular user.
@@ -170,10 +177,12 @@ def get_payments_by_user_id(request, user_id):
     :param user_id: It holds user id
     :return: It returns all payment list of particular user.
     """
+    current_user = request.user
 
     try:
         user_details = User.objects.get(pk=user_id)
-        if user_details.is_active:
+        is_same_tenant = current_user.tenant == user_details.tenant
+        if user_details.is_active and is_same_tenant:
             payment_list = get_all_payments_by_user_id(user_id)
             if len(payment_list) > 0:
                 logger.debug(f"get all payments for user id {user_id}")

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.shortcuts import render
+from oauth2_provider.decorators import protected_resource
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -14,6 +15,7 @@ logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
+@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
 def create_card(request):
     """
     Creates a new card with user given details in database.
@@ -21,6 +23,9 @@ def create_card(request):
     :param request: it holds new card details
     :return: It returns newly created card details with card id
     """
+    current_user = request.user
+    current_user_id = current_user.id
+    request.data["user"] = current_user_id
 
     try:
         print(request.data)
@@ -38,6 +43,7 @@ def create_card(request):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
 def get_card_by_id(request, card_id):
     """
     Gets a particular card details by card id.

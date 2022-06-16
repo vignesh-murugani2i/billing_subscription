@@ -9,24 +9,26 @@ from utils.dynamic_serializer import DynamicFieldsModelSerializer
 
 
 class SubscriptionSerializer(DynamicFieldsModelSerializer):
-    # service = ServiceSerializer(many=False, read_only=True)
+    #service = ServiceSerializer(many=False, read_only=True)
     # plan = PlanSerializer(many=False, read_only=True)
     # user = UserSerializer(many=False, read_only=True)
 
-    plan = serializers.SerializerMethodField()
-    service = serializers.SerializerMethodField()
-
-    def get_plan(self, obj):
-        if self.context.get("request").method == "GET":
-            return obj.plan.amount
-        else:
-            return obj.plan.id
-
-    def get_service(self, obj):
-        if self.context.get("request").method == "GET":
-            return obj.service.name
-        else:
-            return obj.service.id
+    # plan = serializers.SerializerMethodField()
+    # service = serializers.SerializerMethodField()
+    #
+    # def get_plan(self, obj):
+    #     print("4444444")
+    #     if self.context.get("request").method == "GET":
+    #         return obj.plan.amount
+    #     else:
+    #         return obj.plan.pk
+    #
+    # def get_service(self, obj):
+    #     print("4444444")
+    #     if self.context.get("request").method == "GET":
+    #         return obj.service.name
+    #     else:
+    #         return obj.service
 
     class Meta:
         model = Subscription

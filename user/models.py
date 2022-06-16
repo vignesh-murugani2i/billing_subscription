@@ -74,13 +74,13 @@ class MyUserManager(BaseUserManager):
 class User(AbstractBaseUser):
     ROLE_CHOICES = [
         ("super_user", "super_user"),
-        ("client", "client"),
+        ("tenant_admin", "tenant_admin"),
         ("subscriber", "subscriber"),
     ]
 
     name = models.CharField(max_length=250, validators=[
         RegexValidator(
-            regex='^([A-Za-z]{3,})( [a-z]+)*( [a-z]+)*$',
+            regex='^([A-Za-z1-9]{3,})( [a-z]+)*( [a-z]+)*$',
             message='Please enter valid name',
             code='invalid_name'
         ),
@@ -97,7 +97,7 @@ class User(AbstractBaseUser):
     updated_at = models.DateTimeField(auto_now=True, )
     is_active = models.BooleanField(default=True)
 
-    # tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="users",blank=True, null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="users", null=True)
     is_staff = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=True)

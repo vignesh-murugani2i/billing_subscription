@@ -180,7 +180,19 @@ LOGGING = {
 
 OAUTH2_PROVIDER = {
     # this is the list of available scopes
-    'SCOPES': {'read': 'read', 'write': 'Write scope', 'groups': 'Access to your groups'}
+    'SCOPES': {
+        'create_user': 'create particular user',
+        'get_user': 'get particular user',
+        'update_user': 'get particular user',
+        'delete_user': 'delete particular user',
+        'all_users': 'access all user',
+        'tenant_users': 'access by tenant admin and superusers',
+        'subscriber': 'access by user',
+        'superuser': 'access by superuser',
+        'user': 'access by superuser',
+        'admin': 'access by superuser',
+        'tenant_admin': 'access by tenant admin'
+    }
 }
 
 REST_FRAMEWORK = {

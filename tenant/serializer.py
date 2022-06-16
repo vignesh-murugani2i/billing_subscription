@@ -11,7 +11,8 @@ class TenantSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Tenant
-        fields = ("id", "name", "username", "password", "is_active", "users")
+        # fields = ("id", "name", "username", "password", "is_active", "users")
+        fields = '__all__'
 
 # class TenantInfoSerializer(serializers.ModelSerializer):
 #     users = UserSerializer(many=True, read_only=True)

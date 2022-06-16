@@ -7,6 +7,7 @@ from django.shortcuts import render
 
 # Create your views here.
 # from django.utils.datetime_safe import datetime
+from oauth2_provider.decorators import protected_resource
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -21,8 +22,15 @@ logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
+@protected_resource(scopes=['subscriber'])
 def create_subscription(request):
     """Creates new subscription"""
+    current_user = request.user
+    # current_user_id = current_user.id
+    # print(current_user.tenant.id)
+    if current_user.tenant:
+        request.data["tenant"] = current_user.tenant.id
+        request.data["user"] = current_user.id
     try:
         plan_details = Plan.objects.get(id=request.data['plan'])
         plan_type = int(plan_details.plan_type)
@@ -37,7 +45,7 @@ def create_subscription(request):
             request.data['next_subscription_date'] = next_subscription_date
             request.data['subscription_end_date'] = subscription_end_date
             request.data['remind_date'] = calculate_remind_date(next_subscription_date)
-            new_subscription = SubscriptionSerializer(data=request.data)
+            new_subscription = SubscriptionSerializer(data=request.data, context={'request': request})
             new_subscription.is_valid(raise_exception=True)
             new_subscription.save()
             logger.debug(f"subscription created for {new_subscription.data['id']}")
@@ -60,6 +68,7 @@ def create_subscription(request):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
 def get_subscription_by_id(request, subscription_id):
     fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
               "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
@@ -79,6 +88,7 @@ def get_subscription_by_id(request, subscription_id):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['superuser'])
 def get_all_subscription(request):
     fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
               "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
@@ -93,6 +103,7 @@ def get_all_subscription(request):
 
 
 @api_view(['PUT'])
+@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
 def update_subscription_by_id(request, subscription_id):
     """Updates new subscription by id"""
 
@@ -122,6 +133,8 @@ def update_subscription_by_id(request, subscription_id):
         return Response({'message': error.message}, status=400)
 
 
+@api_view(['DELETE'])
+@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
 def delete_subscription_by_id(request, subscription_id):
     try:
         subscription_details = Subscription.objects.get(pk=subscription_id)
@@ -162,6 +175,7 @@ def calculate_remind_date(next_subscription_date):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['superuser', 'tenant_admin'])
 def remind_all_subscriptions(request):
     """
     Gets today date's all subscriptions and send mail notification to

@@ -1,0 +1,6 @@
+# SCOPE_OF_SUPERUSER = 'superuser'
+# SCOPE_OF_TENANT_ADMIN = 'tenant_admin'
+# SCOPE_OF_NORMAL_USER = 'subscriber'
+SCOPE_OF_SUPERUSER = 'superuser admin user'
+SCOPE_OF_TENANT_ADMIN = 'admin user'
+SCOPE_OF_NORMAL_USER = 'user'

@@ -6,13 +6,8 @@ from django.db import models
 
 class Tenant(models.Model):
     name = models.CharField(max_length=200)
-    username = models.CharField(max_length=200)
-    password = models.CharField(max_length=200, validators=[
-        RegexValidator(
-            regex='^[A-Za-z0-9@#$%^&+=]{8,}$',
-            message='Password length must be 8 or above',
-            code='invalid_password'
-        ),
-    ])
+    description = models.TextField()
     is_active = models.BooleanField(default=True)
-    #created_by = models.ForeignKey(User, default=None)
+    created_at = models.DateTimeField(auto_now_add=True, )
+    updated_at = models.DateTimeField(auto_now=True, )
+    created_by = models.IntegerField(default=None, null=True)

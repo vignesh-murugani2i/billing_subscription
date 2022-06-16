@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.utils.datetime_safe import date, datetime
+from oauth2_provider.decorators import protected_resource
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -16,6 +17,7 @@ logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
+@protected_resource(scopes=['superuser', 'tenant_admin'])
 def make_all_subscriptions_payment(request):
     """
     Makes current date's all subscription payment.

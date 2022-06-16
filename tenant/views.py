@@ -1,16 +1,22 @@
 import logging
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from oauth2_provider.decorators import protected_resource
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from subscription.models import Subscription
+from subscription.serializer import SubscriptionSerializer
 from tenant.models import Tenant
 from tenant.serializer import TenantSerializer
+from user.models import User
+from user.serializer import UserSerializer
 
 logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
+@protected_resource(scopes=['superuser'])
 def create_tenant(request):
     """
     Creates a new tenant with given details in database.
@@ -18,8 +24,11 @@ def create_tenant(request):
     :param request: it holds new tenant details
     :return: It returns newly created tenant details with tenant id
     """
+    current_user = request.user
+    current_user_id = current_user.id
 
     try:
+        request.data["created_by"] = current_user_id
         new_tenant = TenantSerializer(data=request.data)
         new_tenant.is_valid(raise_exception=True)
         new_tenant.save()
@@ -31,6 +40,7 @@ def create_tenant(request):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['admin'])
 def get_tenant_by_id(request, tenant_id):
     """
     Gets a particular details tenant by tenant id.
@@ -55,6 +65,7 @@ def get_tenant_by_id(request, tenant_id):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['superuser'])
 def get_all_tenant(request):
     """
     Gets List of all tenant from database.
@@ -75,6 +86,7 @@ def get_all_tenant(request):
 
 
 @api_view(['PUT'])
+@protected_resource(scopes=['admin'])
 def update_tenant_by_id(request, tenant_id):
     """
     Updates a particular tenant details by tenant id.
@@ -98,6 +110,7 @@ def update_tenant_by_id(request, tenant_id):
 
 
 @api_view(['DELETE'])
+@protected_resource(scopes=['admin'])
 def delete_tenant_by_id(request, tenant_id):
     """
     Changes a particular tenant's active status as False in database by tenant id.
@@ -122,6 +135,7 @@ def delete_tenant_by_id(request, tenant_id):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['admin'])
 def get_all_user_by_tenant_id(request, tenant_id):
     """
     Gets all users of tenant by tenant id.
@@ -131,15 +145,38 @@ def get_all_user_by_tenant_id(request, tenant_id):
     :return: It returns all user list of tenant
     """
 
-    fields = ("id", "name", "users")
     try:
-        tenant_details = Tenant.objects.get(pk=tenant_id)
-        if tenant_details.is_active:
-            tenant_details = TenantSerializer(tenant_details,fields=fields)
-            logger.debug(f"get all users of tenant id {tenant_id}")
-            return Response(tenant_details.data)
+        tenant = Tenant.objects.get(pk=tenant_id)
+        if tenant.is_active:
+            users = User.objects.filter(tenant_id=tenant_id)
+            if len(users) > 0:
+                users = UserSerializer(instance=users, many=True, )
+                logger.debug(f"get all users of tenant id {tenant_id}")
+                return Response(users.data)
+            else:
+                return Response("no users found")
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:
-        logger.debug(f"error while getting all users of tenant :{error}")
+        logger.debug(f"Tenant does not exist or is not active tenant :{error}")
+        return Response("no tenant found")
+
+
+@api_view(['GET'])
+@protected_resource(scopes=['admin'])
+def get_all_subscriptions_by_tenant_id(request, tenant_id):
+    try:
+        tenant = Tenant.objecs.get(pk=tenant_id)
+        if tenant.is_active:
+            subscriptions = Subscription.objects.filter(tenant_id=tenant_id, is_active=True)
+            if len(subscriptions) > 0:
+                subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
+                logger.debug(f"get all subscriptions of tenant id {tenant_id}")
+                return Response(subscriptions.data)
+            else:
+                return Response("no subscriptions found")
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist as error:
+        logger.debug(f"Tenant does not exist or is not active tenant :{error}")
         return Response("no tenant found")

@@ -29,7 +29,7 @@ class UserSerializer(DynamicFieldsModelSerializer):
         model = User
         fields = ("id", "name", "email", "phone_number", "password"
                   , "created_at", "updated_at", "is_active", "is_staff", "is_admin",
-                  "is_superuser", "created_by", "user_role","tenant")
+                  "is_superuser", "created_by", "user_role", "tenant")
 
     def create(self, validated_data):
         user = User.objects.create(

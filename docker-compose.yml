@@ -1,0 +1,107 @@
+version: "3.8"
+services:
+
+#  mysql db container
+
+  db:
+      container_name: billing_subscription_db
+      image: mysql
+      volumes:
+        - ./data/db:/var/lib/mysql
+      environment:
+        - MYSQL_DB=mysql
+#        - MYSQL_USER=root
+        - MYSQL_PASSWORD=root
+        - MYSQL_ROOT_PASSWORD=root
+      ports:
+        - "3307:3306"
+      networks:
+        - appnetwork
+
+#  application container
+
+  web:
+      container_name: billing_subscription_web
+      build: .
+      command: bash -c "
+        python manage.py makemigrations
+        && python manage.py migrate
+        && python manage.py runserver 0.0.0.0:8000
+        "
+      volumes:
+        - .:/app
+      ports:
+        - "8000:8000"
+      environment:
+        - MYSQL_NAME=mysql
+        - MYSQL_USER=root
+        - MYSQL_PASSWORD=root
+        - DB_HOST=db
+        - DB_PORT=3306
+        - CELERY_BROKER_URL = 'redis://redis:6379'
+        - CELERY_RESULT_BACKEND = 'db+mysql://root:root@localhost:3306/mysql'
+      depends_on:
+        - db
+      networks:
+        - appnetwork
+
+#  redis container
+
+#  rabbitmq:
+#    image: rabbitmq:latest
+#    hostname: rabbitmq
+#    volumes:
+#      - /var/lib/rabbitmq:/var/lib/rabbitmq
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+  redis:
+    image: redis:5.0-alpine
+    hostname: redis
+    volumes:
+      - /var/lib/redis:/var/lib/redis
+    ports:
+      - "6379:6379"
+
+#  celery container
+
+  celery:
+    container_name: celery
+    build: .
+    command: celery -A billing_subscription_api worker -l INFO
+    volumes:
+      - .:/app
+    environment:
+      - MYSQL_NAME=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - DB_HOST=db
+      - DB_PORT=3306
+    depends_on:
+      - db
+      - redis
+      - web
+
+#  celery-beat container
+
+  celery-beat:
+    container_name: celery_beat
+    build: .
+    command: celery -A billing_subscription_api beat -l INFO
+    volumes:
+      - .:/app
+    environment:
+      - MYSQL_NAME=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - DB_HOST=db
+      - DB_PORT=3306
+
+    depends_on:
+      - db
+      - redis
+      - web
+
+networks:
+  appnetwork:
+    name: application_network

@@ -22,7 +22,7 @@ logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
-@protected_resource(scopes=['subscriber'])
+@protected_resource(scopes=['user'])
 def create_subscription(request):
     """Creates new subscription"""
     current_user = request.user
@@ -68,7 +68,7 @@ def create_subscription(request):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
+@protected_resource(scopes=['user'])
 def get_subscription_by_id(request, subscription_id):
     fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
               "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
@@ -134,7 +134,7 @@ def update_subscription_by_id(request, subscription_id):
 
 
 @api_view(['DELETE'])
-@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
+@protected_resource(scopes=['user'])
 def delete_subscription_by_id(request, subscription_id):
     try:
         subscription_details = Subscription.objects.get(pk=subscription_id)
@@ -175,7 +175,7 @@ def calculate_remind_date(next_subscription_date):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=['superuser', 'tenant_admin'])
+@protected_resource(scopes=['admin'])
 def remind_all_subscriptions(request):
     """
     Gets today date's all subscriptions and send mail notification to
@@ -211,7 +211,7 @@ def is_duplicate_subscription(new_subscription_details):
     :param new_subscription_details: It holds new subscription details
     :return: Return whether it is duplicate subscription or not
     """
-    is_subscription_exist = True
+    # is_subscription_exist = True
     existing_subscription = Subscription.objects.filter(
         user_id=new_subscription_details["user"],
         service_id=new_subscription_details["service"],

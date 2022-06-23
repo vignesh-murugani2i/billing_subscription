@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from billing_subscription_api import settings
 from subscription.models import Subscription
-from subscription.serializer import SubscriptionInfoSerializer
+# from subscription.serializer import SubscriptionInfoSerializer
 from subscription.service import send_mail_to_subscriber
 from user.models import User
 

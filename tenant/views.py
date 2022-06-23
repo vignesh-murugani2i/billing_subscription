@@ -5,6 +5,8 @@ from oauth2_provider.decorators import protected_resource
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from payment.models import Payment
+from payment.serializer import PaymentSerializer
 from subscription.models import Subscription
 from subscription.serializer import SubscriptionSerializer
 from tenant.models import Tenant
@@ -28,6 +30,7 @@ def create_tenant(request):
     current_user_id = current_user.id
 
     try:
+
         request.data["created_by"] = current_user_id
         new_tenant = TenantSerializer(data=request.data)
         new_tenant.is_valid(raise_exception=True)
@@ -166,7 +169,7 @@ def get_all_user_by_tenant_id(request, tenant_id):
 @protected_resource(scopes=['admin'])
 def get_all_subscriptions_by_tenant_id(request, tenant_id):
     try:
-        tenant = Tenant.objecs.get(pk=tenant_id)
+        tenant = Tenant.objects.get(pk=tenant_id)
         if tenant.is_active:
             subscriptions = Subscription.objects.filter(tenant_id=tenant_id, is_active=True)
             if len(subscriptions) > 0:
@@ -175,6 +178,26 @@ def get_all_subscriptions_by_tenant_id(request, tenant_id):
                 return Response(subscriptions.data)
             else:
                 return Response("no subscriptions found")
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist as error:
+        logger.debug(f"Tenant does not exist or is not active tenant :{error}")
+        return Response("no tenant found")
+
+
+@api_view(['GET'])
+@protected_resource(scopes=['admin'])
+def get_all_payments_by_tenant_id(request, tenant_id):
+    try:
+        tenant = Tenant.objects.get(pk=tenant_id)
+        if tenant.is_active:
+            payments = Payment.objects.filter(tenant_id=tenant_id,)
+            if len(payments) > 0:
+                payments = PaymentSerializer(instance=payments, many=True)
+                logger.debug(f"get all subscriptions of tenant id {tenant_id}")
+                return Response(payments.data)
+            else:
+                return Response("no payments found")
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:

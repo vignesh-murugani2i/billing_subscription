@@ -17,7 +17,7 @@ logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
-@protected_resource(scopes=['superuser', 'tenant_admin'])
+@protected_resource(scopes=['superuser'])
 def make_all_subscriptions_payment(request):
     """
     Makes current date's all subscription payment.
@@ -52,6 +52,7 @@ def make_all_subscriptions_payment(request):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['user'])
 def get_payment_by_id(request, payment_id):
     try:
         payment = Payment.objects.get(pk=payment_id)
@@ -62,6 +63,7 @@ def get_payment_by_id(request, payment_id):
 
 
 @api_view(['GET'])
+@protected_resource(scopes=['admin'])
 def get_all_payments(request):
     payments = Payment.objects.all()
     if len(payments) == 0:

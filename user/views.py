@@ -151,7 +151,7 @@ def get_all_subscription_by_user_id(request, user_id):
     try:
         user_details = User.objects.get(pk=user_id)
         is_same_tenant = current_user.tenant == user_details.tenant
-        if user_details.is_active and is_same_tenant:
+        if user_details.is_active and is_same_tenant or current_user.is_superuser:
             user_details = get_subscriptions_by_user_id(user_id)
             logger.debug(f"get all subscription for user id {user_id}")
             if len(user_details) == 0:
@@ -182,7 +182,7 @@ def get_payments_by_user_id(request, user_id):
     try:
         user_details = User.objects.get(pk=user_id)
         is_same_tenant = current_user.tenant == user_details.tenant
-        if user_details.is_active and is_same_tenant:
+        if user_details.is_active and is_same_tenant or current_user.is_superuser:
             payment_list = get_all_payments_by_user_id(user_id)
             if len(payment_list) > 0:
                 logger.debug(f"get all payments for user id {user_id}")

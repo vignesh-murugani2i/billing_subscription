@@ -19,9 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-c5qsb&z&=8m&w%y81%$+jk&#zdi!swxh-k7mz0=hh15+00^a9&'
+SECRET_KEY = 'django-insecure-c5qsb&z&=8m&w%y81%$+jk&#zdi!swxh-k7mz0=hh15+00^a9&'
 # SECRET_KEY = os.environ.get('SECRET_KEY', '')
-SECRET_KEY = "dsdsssdss"
+# SECRET_KEY = "dsdsssdss"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -82,27 +82,28 @@ WSGI_APPLICATION = 'billing_subscription_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'billing_subscription',
-#         'USER': 'root',
-#         'PASSWORD': 'qwertY_12345',
-#         'HOST': 'localhost',
-#         'PORT': '3306'
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ['MYSQL_NAME'],
-        'USER': os.environ['MYSQL_USER'],
-        'PASSWORD': os.environ['MYSQL_PASSWORD'],
-        # 'HOST': '127.0.0.1',
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.environ['DB_PORT'],
+        'NAME': 'billing_subscription',
+        'USER': 'root',
+        'PASSWORD': 'qwertY_12345',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.environ['MYSQL_NAME'],
+#         'USER': os.environ['MYSQL_USER'],
+#         'PASSWORD': os.environ['MYSQL_PASSWORD'],
+#         # 'HOST': '127.0.0.1',
+#         'HOST': os.environ['DB_HOST'],
+#         'PORT': os.environ['DB_PORT'],
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -144,18 +145,21 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # celery Settings
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", 'redis://redis:6379')
-# CELERY_BROKER_URL = "redis://redis:6379"
-# BROKER_URL = 'redis://localhost:6379/0'
+#CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", 'redis://redis:6379')
+CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Kolkata'
 
 # CELERY_RESULT_BACKEND = "redis://redis:6379"
-# CELERY_RESULT_BACKEND = 'db+mysql://root:qwertY_12345@localhost:3306/billing_subscription'
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", 'db+mysql://root:root@localhost:3306/mysql')
+CELERY_RESULT_BACKEND = 'db+mysql://root:qwertY_12345@localhost:3306/billing_subscription'
+# CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", 'db+mysql://root:root@localhost:3306/mysql')
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_IMPORTS = [
+    'subscription.tasks',
+    'payment.tasks',
+]
 
 # SMTP email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -163,7 +167,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'subscriptionforyou45@gmail.com'
-EMAIL_HOST_PASSWORD = 'just$for$demo'
+# EMAIL_HOST_PASSWORD = 'just$for$demo'
+EMAIL_HOST_PASSWORD = 'mdsxlxwqjcamvrwh'
 DEFAULT_FROM_EMAIL = 'Celery<subscriptionforyou45@gmail.com>'
 
 LOGGING = {
@@ -197,17 +202,10 @@ LOGGING = {
 OAUTH2_PROVIDER = {
     # this is the list of available scopes
     'SCOPES': {
-        'create_user': 'create particular user',
-        'get_user': 'get particular user',
-        'update_user': 'get particular user',
-        'delete_user': 'delete particular user',
-        'all_users': 'access all user',
-        'tenant_users': 'access by tenant admin and superusers',
-        'subscriber': 'access by user',
         'superuser': 'access by superuser',
         'user': 'access by user',
         'admin': 'access by admin',
-        'tenant_admin': 'access by tenant admin'
+        'tenant-admin': 'access by tenant admin'
     }
 }
 

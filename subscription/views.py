@@ -16,6 +16,7 @@ from plan.models import Plan
 from service.models import Service
 from subscription.models import Subscription
 from subscription.serializer import SubscriptionSerializer
+from subscription.service import send_mail_to_subscriber
 from user.models import User
 
 logger = logging.getLogger('root')
@@ -28,12 +29,14 @@ def create_subscription(request):
     current_user = request.user
     # current_user_id = current_user.id
     # print(current_user.tenant.id)
+    print(current_user.tenant)
     if current_user.tenant:
         request.data["tenant"] = current_user.tenant.id
         request.data["user"] = current_user.id
     try:
         plan_details = Plan.objects.get(id=request.data['plan'])
         plan_type = int(plan_details.plan_type)
+        print(request.data)
         if is_duplicate_subscription(request.data):
             response = Response("subscription already exist on this service")
         else:
@@ -44,7 +47,7 @@ def create_subscription(request):
                 plan_type, int(request.data['cycle_count']), next_subscription_date)
             request.data['next_subscription_date'] = next_subscription_date
             request.data['subscription_end_date'] = subscription_end_date
-            request.data['remind_date'] = calculate_remind_date(next_subscription_date)
+            #request.data['remind_date'] = calculate_remind_date(next_subscription_date)
             new_subscription = SubscriptionSerializer(data=request.data, context={'request': request})
             new_subscription.is_valid(raise_exception=True)
             new_subscription.save()
@@ -71,7 +74,7 @@ def create_subscription(request):
 @protected_resource(scopes=['user'])
 def get_subscription_by_id(request, subscription_id):
     fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
-              "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
+              "cycle_count", "next_subscription_date", "subscription_end_date", )
 
     try:
         subscription_details = Subscription.objects.get(pk=subscription_id)
@@ -91,7 +94,7 @@ def get_subscription_by_id(request, subscription_id):
 @protected_resource(scopes=['superuser'])
 def get_all_subscription(request):
     fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
-              "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
+              "cycle_count", "next_subscription_date", "subscription_end_date", )
     subscriptions = Subscription.objects.filter(is_active=True)
     if subscriptions.exists():
         subscriptions = SubscriptionSerializer(instance=subscriptions, many=True, fields=fields)
@@ -175,7 +178,7 @@ def calculate_remind_date(next_subscription_date):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=['admin'])
+@protected_resource(scopes=['user'])
 def remind_all_subscriptions(request):
     """
     Gets today date's all subscriptions and send mail notification to
@@ -184,22 +187,51 @@ def remind_all_subscriptions(request):
     :param request: for remind all subscriber
     """
     try:
-        mail_server = smtplib.SMTP('smtp.gmail.com', 587)
-        mail_server.starttls()
-        mail_server.login("subscriptionforyou45@gmail.com", "just$for$demo")
+        # # print("####")
+        # # mail_server = smtplib.SMTP('smtp.gmail.com', 587)
+        # # print("####")
+        # # mail_server.starttls()
+        # # mail_server.login("subscriptionforyou45@gmail.com", "just$for$demo")
+        # # print("####")
+        # # today_date = date.today()
+        # # print("dsdsdd")
+        # reminder_list = Subscription.objects.filter(
+        #     remind_date="2022-06-24")
+        # print(len(reminder_list))
+        # for subscription_detail in reminder_list:
+        #     plan_amount = subscription_detail.plan.amount
+        #     service_name = subscription_detail.service.name
+        #     subscriber_mail = subscription_detail.user.email
+        #     mail_message = f"your {service_name} subscription for plan {plan_amount} " \
+        #               f"will be subscribed on {subscription_detail.next_subscription_date}"
+        #     # mail_server.sendmail("subscriptionforyou45@gmail.com", subscriber_mail, message)
+        #     send_mail_to_subscriber("DSDSSD", mail_message,
+        #                             subscriber_mail)
+        #
+        # return Response("mail sent successfully")
+        # mail_server.quit()
+        failed_mail_list = []
+        success_mail_list = []
         today_date = date.today()
-        reminder_list = SubscriptionSerializer(instance=Subscription.objects.filter(
-            remind_date="2022-05-20"), many=True)
-        for subscription_detail in reminder_list.data:
-            plan_amount = subscription_detail["plan"]['amount']
-            service_name = subscription_detail["service"]['name']
-            subscriber_mail = User.objects.get(pk=subscription_detail['user']).email
-            message = f"your {service_name} subscription for plan {plan_amount} " \
-                      f"will be subscribed on {subscription_detail['next_subscription_date']}"
-            mail_server.sendmail("subscriptionforyou45@gmail.com", subscriber_mail, message)
+        reminder_list = Subscription.objects.filter(next_subscription_date="2022-06-24", is_active=True)
+        mail_subject = "Just For Reminder"
+        for subscription_detail in reminder_list:
+            print(reminder_list)
+            plan_amount = subscription_detail.plan.amount
+            service_name = subscription_detail.service.name
+            subscriber_mail = subscription_detail.user.email
+            mail_message = f"your {service_name} subscription for plan {plan_amount} " \
+                           f"will be subscribed on {subscription_detail.next_subscription_date}"
 
-        return Response("mail sent successfully")
-        mail_server.quit()
+            logger.debug("start to sent mail")
+            if send_mail_to_subscriber(mail_subject, mail_message,
+                                       subscriber_mail):
+                logger.debug("mail sent")
+                print("dsddd")
+                success_mail_list.append(subscriber_mail)
+            else:
+                failed_mail_list.append(subscriber_mail)
+
     except smtplib.SMTPResponseException as mail_error:
         return Response("mail failed to send")
 

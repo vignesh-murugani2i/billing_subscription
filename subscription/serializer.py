@@ -32,9 +32,9 @@ class SubscriptionSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ("id", "tenant", "user", "service", "plan", "card", "remind_days",
+        fields = ("id", "tenant", "user", "service", "plan", "card",
                   "account_mail", "start_subscription_date", "cycle_count",
-                  "next_subscription_date", "subscription_end_date", "remind_date")
+                  "next_subscription_date", "subscription_end_date",)
         # fields = '__all__'
 
 # class SubscriptionInfoSerializer(serializers.ModelSerializer):

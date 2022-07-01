@@ -56,3 +56,28 @@ class UserSerializer(DynamicFieldsModelSerializer):
         application.save()
         print(application)
         return user
+
+    # def update(self, instance, validated_data):(self, validated_data):
+    #     user = User.objects.create(
+    #         # name=validated_data['name'],
+    #         # email=validated_data['email'],
+    #         # phone_number=validated_data['phone_number'],
+    #         # is_staff=validated_data['is_staff'],
+    #         # is_admin=validated_data['is_admin'],
+    #         # is_superuser=validated_data['is_superuser'],
+    #         # created_by=validated_data['created_by'],
+    #         # user_role=validated_data['user_role'],
+    #         # tenant=validated_data['tenant']
+    #         **validated_data
+    #     )
+    #
+    #     user.set_password(validated_data['password'])
+    #     user.save()
+
+    def update(self, instance, validated_data):
+        instance.password = validated_data.get('password', instance.password)
+        print("sss")
+        instance.set_password(validated_data['password'])
+        #user.save()
+        instance.save()
+        return instance

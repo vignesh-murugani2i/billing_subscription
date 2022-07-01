@@ -15,7 +15,7 @@ logger = logging.getLogger('root')
 
 
 @api_view(['POST'])
-@protected_resource(scopes=['superuser', 'tenant_admin', 'subscriber'])
+@protected_resource(scopes=['user'])
 def create_card(request):
     """
     Creates a new card with user given details in database.

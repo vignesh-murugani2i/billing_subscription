@@ -21,14 +21,17 @@ def send_mail_to_subscriber(mail_subject, mail_message, subscriber_mail):
     """
     is_mail_sent = True
     try:
+        print("start")
         send_mail(
             subject=mail_subject,
             message=mail_message,
             from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[subscriber_mail],
+            recipient_list=[subscriber_mail, ],
         )
+        print("end")
         is_mail_sent = True
     except smtplib.SMTPResponseException as mail_error:
+        print("error")
         is_mail_sent = False
     return is_mail_sent
 
@@ -59,7 +62,7 @@ def set_next_subscription_date(subscription):
         elif plan_type == 3:
             next_subscription_date = next_subscription_date + timedelta(days=365)
         subscription.next_subscription_date = next_subscription_date
-        subscription.remind_date = subscription.next_subscription_date - timedelta(days=2)
+        #subscription.remind_date = subscription.next_subscription_date - timedelta(days=2)
         print(subscription.next_subscription_date)
         subscription.save()
         return subscription
@@ -67,7 +70,7 @@ def set_next_subscription_date(subscription):
 
 def get_subscriptions_by_user_id(user_id):
     fields = ("id", "tenant", "user", "service", "plan", "start_subscription_date",
-              "cycle_count", "next_subscription_date", "subscription_end_date", "remind_date")
+              "cycle_count", "next_subscription_date", "subscription_end_date",)
     subscriptions = Subscription.objects.filter(user_id=user_id, is_active=True)
     subscriptions = SubscriptionSerializer(instance=subscriptions, many=True, fields=fields)
     return subscriptions.data

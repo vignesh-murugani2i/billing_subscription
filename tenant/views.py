@@ -138,7 +138,7 @@ def delete_tenant_by_id(request, tenant_id):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=['admin'])
+@protected_resource(scopes=['superuser'])
 def get_all_user_by_tenant_id(request, tenant_id):
     """
     Gets all users of tenant by tenant id.
@@ -166,7 +166,7 @@ def get_all_user_by_tenant_id(request, tenant_id):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=['admin'])
+@protected_resource(scopes=['superuser'])
 def get_all_subscriptions_by_tenant_id(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
@@ -186,18 +186,93 @@ def get_all_subscriptions_by_tenant_id(request, tenant_id):
 
 
 @api_view(['GET'])
-@protected_resource(scopes=['admin'])
+@protected_resource(scopes=['superuser'])
 def get_all_payments_by_tenant_id(request, tenant_id):
     try:
         tenant = Tenant.objects.get(pk=tenant_id)
         if tenant.is_active:
-            payments = Payment.objects.filter(tenant_id=tenant_id,)
+            payments = Payment.objects.filter(tenant_id=tenant_id, )
             if len(payments) > 0:
                 payments = PaymentSerializer(instance=payments, many=True)
                 logger.debug(f"get all subscriptions of tenant id {tenant_id}")
                 return Response(payments.data)
             else:
                 return Response("no payments found")
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist as error:
+        logger.debug(f"Tenant does not exist or is not active tenant :{error}")
+        return Response("no tenant found")
+
+
+@api_view(['GET'])
+@protected_resource(scopes=['tenant-admin'])
+def get_my_payments(request):
+    current_user = request.user
+    tenant_id = current_user.tenant_id
+
+    try:
+        tenant = Tenant.objects.get(pk=tenant_id)
+        if tenant.is_active:
+            payments = Payment.objects.filter(tenant_id=tenant_id, )
+            if len(payments) > 0:
+                payments = PaymentSerializer(instance=payments, many=True)
+                logger.debug(f"get all subscriptions of tenant id {tenant_id}")
+                return Response(payments.data)
+            else:
+                return Response("no payments found")
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist as error:
+        logger.debug(f"Tenant does not exist or is not active tenant :{error}")
+        return Response("no tenant found")
+
+
+@api_view(['GET'])
+@protected_resource(scopes=['tenant-admin'])
+def get_my_subscriptions(request):
+    current_user = request.user
+    tenant_id = current_user.tenant_id
+
+    try:
+        tenant = Tenant.objects.get(pk=tenant_id)
+        if tenant.is_active:
+            subscriptions = Subscription.objects.filter(tenant_id=tenant_id, is_active=True)
+            if len(subscriptions) > 0:
+                subscriptions = SubscriptionSerializer(instance=subscriptions, many=True)
+                logger.debug(f"get all subscriptions of tenant id {tenant_id}")
+                return Response(subscriptions.data)
+            else:
+                return Response("no subscriptions found")
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist as error:
+        logger.debug(f"Tenant does not exist or is not active tenant :{error}")
+        return Response("no tenant found")
+
+
+@api_view(['GET'])
+@protected_resource(scopes=['tenant-admin'])
+def get_my_users(request):
+    """
+    Gets all users of tenant by tenant id.
+
+    :param request: It holds all request params
+    :return: It returns all user list of tenant
+    """
+    current_user = request.user
+    tenant_id = current_user.tenant_id
+
+    try:
+        tenant = Tenant.objects.get(pk=tenant_id)
+        if tenant.is_active:
+            users = User.objects.filter(tenant_id=tenant_id)
+            if len(users) > 0:
+                users = UserSerializer(instance=users, many=True, )
+                logger.debug(f"get all users of tenant id {tenant_id}")
+                return Response(users.data)
+            else:
+                return Response("no users found")
         else:
             raise ObjectDoesNotExist
     except ObjectDoesNotExist as error:

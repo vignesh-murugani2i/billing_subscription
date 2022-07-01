@@ -147,7 +147,7 @@ def get_all_subscription_by_user_id(request, user_id):
     :param user_id: it holds user id    :return: it returns subscription list of particular user
     """
     current_user = request.user
-    #current_user_id = current_user.id.
+    # current_user_id = current_user.id.
     try:
         user_details = User.objects.get(pk=user_id)
         is_same_tenant = current_user.tenant == user_details.tenant
@@ -197,3 +197,47 @@ def get_payments_by_user_id(request, user_id):
         response = "no user found"
 
     return Response(response)
+
+
+@api_view(['GET'])
+# @protected_resource(scopes=['admin'])
+def get_my_profile(request):
+    fields = ("id", "name", "email", "phone_number", "tenant")
+    current_user = request.user
+    current_user_id = current_user.id
+    try:
+        user_details = User.objects.get(pk=current_user_id)
+        if user_details.is_active:
+            user_details = UserSerializer(user_details, fields=fields)
+            logger.debug(f"get particular user details of id {current_user_id}")
+            return Response(user_details.data)
+        else:
+            raise ObjectDoesNotExist
+    except ObjectDoesNotExist:
+        logger.debug(f"No user found for this id")
+        return Response({'message': 'No such user'})
+
+
+@api_view(['PUT'])
+# @protected_resource(scopes=['user'])
+def update_my_profile(request, user_id):
+    """
+    Updates a particular user details by user id.
+
+    :param request: for update particular user
+    :param user_id: it holds user id
+    :return: returns updated user details.
+    """
+    current_user = request.user
+    current_user_id = current_user.id
+    try:
+        existing_user_data = User.objects.get(pk=current_user_id)
+        updated_user_data = UserSerializer(existing_user_data,
+                                           data=request.data, partial=True)
+        updated_user_data.is_valid(raise_exception=True)
+        updated_user_data.save()
+        logger.debug(f"updating particular user detail of id {current_user_id}")
+        return Response(f"successfully updated user detail of id {current_user_id}")
+    except ValidationError as error:
+        logger.debug(f"validation error {error.message}")
+        return Response({'message': error.message}, status=400)

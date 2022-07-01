@@ -8,7 +8,6 @@ import traceback
 
 from cryptography.fernet import Fernet
 
-
 logger = logging.getLogger('root')
 
 

@@ -9,9 +9,11 @@ from celery.signals import setup_logging
 from celery.utils.log import get_task_logger
 
 # set the default Django settings module for the 'celery' program.
+# from subscription.tasks import remind_all_subscriptions
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'billing_subscription_api.settings')
 app = Celery('billing_subscription_api')
+
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
@@ -21,7 +23,7 @@ app.config_from_object(settings, namespace="CELERY")
 app.conf.beat_schedule = {
     'trigger_mail_reminder_everyday_at_10_A.M': {
         'task': 'subscription.tasks.remind_all_subscriptions',
-        'schedule': crontab(hour=13, minute=21),
+        'schedule': crontab(hour=15, minute=39),
     },
 
     'trigger_subscription_everyday_at_12_A.M': {
@@ -32,15 +34,15 @@ app.conf.beat_schedule = {
 }
 
 
-@setup_logging.connect
-def config_loggers(*args, **kwargs):
-    from logging.config import dictConfig  # noqa
-    from django.conf import settings  # noqa
-
-    dictConfig(settings.LOGGING)
-
-
-app.autodiscover_tasks()
+# @setup_logging.connect
+# def config_loggers(*args, **kwargs):
+#     from logging.config import dictConfig  # noqa
+#     from django.conf import settings  # noqa
+#
+#     dictConfig(settings.LOGGING)
+#
+#
+# app.autodiscover_tasks()
 
 
 @app.task(bind=True)

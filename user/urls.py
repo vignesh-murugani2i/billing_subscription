@@ -10,4 +10,6 @@ urlpatterns = [
     path('user/<int:user_id>/delete', views.delete_user_by_id, name='delete_user_by_id'),
     path('user/subscriptions/<int:user_id>', views.get_all_subscription_by_user_id),
     path('user/payments/<int:user_id>', views.get_payments_by_user_id),
+    path('user/get_profile', views.get_my_profile),
+    path('user/update_profile', views.update_my_profile),
 ]

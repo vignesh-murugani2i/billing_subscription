@@ -15,35 +15,45 @@ services:
         - MYSQL_ROOT_PASSWORD=root
       ports:
         - "3307:3306"
-      networks:
-        - appnetwork
 
 #  application container
 
   web:
-      container_name: billing_subscription_web
-      build: .
-      command: bash -c "
-        python manage.py makemigrations
-        && python manage.py migrate
-        && python manage.py runserver 0.0.0.0:8000
-        "
+    container_name: billing_subscription_api
+    build: .
+    #    command: gunicorn rentalcommunityapi.wsgi:application --bind 0.0.0.0:8000
+    #    build: .
+    command: bash -c "
+      python manage.py makemigrations
+      && python manage.py migrate
+      && gunicorn billing_subscription_api.wsgi:application --bind 0.0.0.0:8000 --workers 3
+      "
+    #      gunicorn billing_subscription_api.wsgi:application --bind  0.0.0.0:8000
+
+    volumes:
+      - static:/static
+    ports:
+      - "8000:8000"
+    environment:
+      - MYSQL_NAME=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - DB_HOST=db
+      - DB_PORT=3306
+      - CELERY_BROKER_URL = 'redis://redis:6379'
+      - CELERY_RESULT_BACKEND = 'db+mysql://root:root@localhost:3306/mysql'
+    depends_on:
+      - db
+
+  nginx:
+      build: ./nginx
       volumes:
-        - .:/app
+        - static:/static
       ports:
-        - "8000:8000"
-      environment:
-        - MYSQL_NAME=mysql
-        - MYSQL_USER=root
-        - MYSQL_PASSWORD=root
-        - DB_HOST=db
-        - DB_PORT=3306
-        - CELERY_BROKER_URL = 'redis://redis:6379'
-        - CELERY_RESULT_BACKEND = 'db+mysql://root:root@localhost:3306/mysql'
+        - "80:80"
       depends_on:
-        - db
-      networks:
-        - appnetwork
+        - web
+
 
 #  redis container
 
@@ -102,6 +112,6 @@ services:
       - redis
       - web
 
-networks:
-  appnetwork:
-    name: application_network
+volumes:
+    static:
+

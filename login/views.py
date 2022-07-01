@@ -20,7 +20,7 @@ def login_user(request):
     user = authenticate(username=request.data['username'], password=request.data['password'])
     print(user)
 
-    if user:
+    if user.is_active:
         app_obj = Application.objects.filter(user=user)
 
         print(app_obj[0].client_id)
